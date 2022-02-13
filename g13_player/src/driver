@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+"""
+***DESCRIPTION***
+"""
+
+"""
+IMPORTS
+"""
+import rospy
+
+"""
+METADATA
+"""
+
+"""
+TODO
+"""
+
+"""
+CLASS DEFINITIONS
+"""
+class Driver:
+
+    def __init__(self):
+        
+        self.name = rospy.get_name().strip('/')
+        self.my_team = None
+
+        if 'red' in self.name:            
+            self.my_team = 'red'
+            self.prey_team = 'green'
+            self.hunter_team = 'blue'
+        
+        elif 'green' in self.name:            
+            self.my_team = 'green'
+            self.prey_team = 'blue'
+            self.hunter_team = 'red'
+        
+        elif 'blue' in self.name:            
+            self.my_team = 'blue'
+            self.prey_team = 'red'
+            self.hunter_team = 'green'
+
+        players = {'red': rospy.get_param('/red_players'),
+        'green': rospy.get_param('/green_players'),
+        'blue': rospy.get_param('/blue_players')}
+
+        rospy.loginfo(f'My name is {self.name}. I am team {self.my_team} I am hunting {players[self.prey_team]} and fleeing from {players[self.hunter_team]}')
+
+"""
+FUNCTIONS DEFINITIONS
+"""
+def main():
+
+    rospy.init_node('g13_driver', anonymous=False)
+
+    driver = Driver()
+    rospy.spin()
+
+"""
+MAIN
+"""
+if __name__ == '__main__':
+    main()
