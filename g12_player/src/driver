@@ -52,7 +52,7 @@ FUNCTIONS DEFINITIONS
 """
 def main():
 
-    rospy.init_node('g13_driver', anonymous=False)
+    rospy.init_node('g12_driver', anonymous=False)
 
     driver = Driver()
     rospy.spin()
