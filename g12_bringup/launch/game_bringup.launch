@@ -56,8 +56,7 @@
 
     <group if="$(arg visualize)">
         <!-- Include do visualize.launch-->
-        <include file="$(find g12_bringup)/launch/visualize.launch">
-        </include>
+        <include file="$(find g12_bringup)/launch/visualize.launch"></include>
     </group>
 
 
