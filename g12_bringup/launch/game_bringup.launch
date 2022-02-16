@@ -11,6 +11,19 @@
 
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
+        <!-- Run a VoxelGrid filter to clean NaNs and downsample the data -->
+        <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+        <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
+            <remap from="~input" to="camera/depth/points" />
+            <rosparam>
+            filter_field_name: z
+            filter_limit_min: 0.01
+            filter_limit_max: 5.0
+            filter_limit_negative: False
+            leaf_size: 0.025
+            </rosparam>
+        </node>
+
         <include file="$(find g12_bringup)/launch/spawn.launch">
             <arg name="player_name" value="red1"/>
             <arg name="x_pos" value="5"/>
@@ -19,7 +32,7 @@
         </include>
     </group>
 
-    <group ns="blue1">
+    <!-- <group ns="blue1">
         <param name="tf_prefix" value="blue1"></param>
 
         <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=blue1 player_color:=Blue"/>
@@ -32,9 +45,9 @@
             <arg name="y_pos" value="-2"/>
             <arg name="z_pos" value="0"/>
         </include>
-    </group>
+    </group> -->
 
-    <group ns="green1">
+    <!-- <group ns="green1">
         <param name="tf_prefix" value="green1"></param>
 
         <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=green1 player_color:=Green"/>
@@ -47,7 +60,7 @@
             <arg name="y_pos" value="5"/>
             <arg name="z_pos" value="0"/>
         </include>
-    </group>
+    </group> -->
 
 
 

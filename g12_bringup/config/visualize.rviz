@@ -58,7 +58,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /red1/kinect/color/image_raw
+      Image Topic: /red1/camera/color/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -80,7 +80,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -89,13 +89,13 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.10000000149011612
+      Size (m): 0.05000000074505806
       Style: Spheres
       Topic: /red1/scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
@@ -186,7 +186,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /red1/kinect/depth/points
+      Topic: /red1/voxel_grid/output
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -219,7 +219,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.0338290929794312
+      Distance: 3.4179179668426514
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -227,17 +227,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 2.8977110385894775
-        Y: 2.3489692211151123
-        Z: 2.2678425312042236
+        X: 3.199402332305908
+        Y: 2.1511118412017822
+        Z: 2.4758799076080322
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5747963190078735
+      Pitch: 0.779796302318573
       Target Frame: <Fixed Frame>
-      Yaw: 3.7491331100463867
+      Yaw: 3.429133176803589
     Saved: ~
 Window Geometry:
   Displays:
