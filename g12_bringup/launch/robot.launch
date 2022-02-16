@@ -7,7 +7,7 @@
 
     <group ns="$(arg robot_name)">
 
-        <param name="tf_prefix" value="$(arg robot_name)"></param>
+        <param name="tf_prefix" value="$(arg robot_name)"/>
 
         <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=$(arg robot_name) player_color:=$(arg robot_color)"/>
 
