@@ -2,7 +2,7 @@
 <robot name="team_hunt_player" xmlns:xacro="http://ros.org/wiki/xacro">
 
 <!--  Arguments-->
-  <xacro:arg name="player_name"  default="g13"/>
+  <xacro:arg name="player_name"  default="g12"/>
   <xacro:arg name="player_color"  default="Red"/>
 
 <!-- Copy arguments to properties so that they are visible in the included xacros-->
@@ -11,7 +11,7 @@
 
 <!--  Includes-->
   <xacro:include filename="$(find g12_description)/urdf/properties.xacro"/>
-  <xacro:include filename="$(find g12_description)/urdf/g13.gazebo.xacro"/>
+  <xacro:include filename="$(find g12_description)/urdf/g12.gazebo.xacro"/>
 
 <!--  Define links and joints-->
   <link name="base_footprint"/>

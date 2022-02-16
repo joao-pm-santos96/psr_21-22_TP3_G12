@@ -7,7 +7,7 @@
     <group ns="red1">
         <param name="tf_prefix" value="red1"></param>
 
-        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g13.urdf.xacro player_name:=red1 player_color:=Red"/>
+        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=red1 player_color:=Red"/>
 
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
@@ -22,7 +22,7 @@
     <group ns="blue1">
         <param name="tf_prefix" value="blue1"></param>
 
-        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g13.urdf.xacro player_name:=blue1 player_color:=Blue"/>
+        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=blue1 player_color:=Blue"/>
 
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
@@ -37,7 +37,7 @@
     <group ns="green1">
         <param name="tf_prefix" value="green1"></param>
 
-        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g13.urdf.xacro player_name:=green1 player_color:=Green"/>
+        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=green1 player_color:=Green"/>
 
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 

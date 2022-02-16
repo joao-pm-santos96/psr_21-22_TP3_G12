@@ -1,6 +1,6 @@
 <launch>
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
-    <arg name="player_name" default="g13"/>
+    <arg name="player_name" default="g12"/>
 
     <!-- Use a player_name namespace to get unique topic names, services, parameters, etc.-->
     <group ns="$(arg player_name)">
