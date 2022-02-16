@@ -1,83 +1,22 @@
 <launch>
+
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
     <arg name="visualize" default="true"/>
 
     <rosparam command="load" file="$(find g12_bringup)/params/game.yaml"/>
 
-    <group ns="red1">
-        <param name="tf_prefix" value="red1"></param>
-
-        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=red1 player_color:=Red"/>
-
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-
-        <!-- Run a VoxelGrid filter to clean NaNs and downsample the data -->
-        <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
-        <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
-            <remap from="~input" to="camera/depth/points" />
-            <rosparam>
-            filter_field_name: z
-            filter_limit_min: 0.01
-            filter_limit_max: 5.0
-            filter_limit_negative: False
-            leaf_size: 0.025
-            </rosparam>
-        </node>
-
-        <!-- GMapping -->
-        <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen">
-            <!-- <remap from="scan" to="scan" /> -->
-            <param name="map_frame" value="/red1/map" />
-            <param name="odom_frame" value="/red1/odom" />
-            <param name="base_frame" value="/red1/base_link" />
-        </node>
-
-        <include file="$(find g12_bringup)/launch/spawn.launch">
-            <arg name="player_name" value="red1"/>
-            <arg name="x_pos" value="5"/>
-            <arg name="y_pos" value="5"/>
-            <arg name="z_pos" value="0"/>
-        </include>
-    </group>
-
-    <!-- <group ns="blue1">
-        <param name="tf_prefix" value="blue1"></param>
-
-        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=blue1 player_color:=Blue"/>
-
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-
-        <include file="$(find g12_bringup)/launch/spawn.launch">
-            <arg name="player_name" value="blue1"/>
-            <arg name="x_pos" value="-2"/>
-            <arg name="y_pos" value="-2"/>
-            <arg name="z_pos" value="0"/>
-        </include>
-    </group> -->
-
-    <!-- <group ns="green1">
-        <param name="tf_prefix" value="green1"></param>
-
-        <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=green1 player_color:=Green"/>
-
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-
-        <include file="$(find g12_bringup)/launch/spawn.launch">
-            <arg name="player_name" value="green1"/>
-            <arg name="x_pos" value="-5"/>
-            <arg name="y_pos" value="5"/>
-            <arg name="z_pos" value="0"/>
-        </include>
-    </group> -->
-
-
-
-
-
+    <!-- Red1 -->
+    <include file="$(find g12_bringup)/launch/robot.launch">
+        <arg name="robot_name" value="red1"/>
+        <arg name="robot_color" value="Red"/>
+        <arg name="x_pos" value="5"/>
+        <arg name="y_pos" value="5"/>
+        <arg name="z_pos" value="0"/>
+    </include>
 
     <group if="$(arg visualize)">
         <!-- Include do visualize.launch-->
-        <include file="$(find g12_bringup)/launch/visualize.launch"></include>
+        <include file="$(find g12_bringup)/launch/visualize.launch"/>
     </group>
 
 
