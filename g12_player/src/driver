@@ -8,6 +8,8 @@ IMPORTS
 """
 import rospy
 
+from geometry_msgs.msg import PoseStamped
+
 """
 METADATA
 """
@@ -46,6 +48,8 @@ class Driver:
         'blue': rospy.get_param('/blue_players')}
 
         rospy.loginfo(f'My name is {self.name}. I am team {self.my_team} I am hunting {players[self.prey_team]} and fleeing from {players[self.hunter_team]}')
+
+        self.pose_pub = rospy.Publisher(f'/{self.name}/move_base_simple/goal', PoseStamped)
 
 """
 FUNCTIONS DEFINITIONS
