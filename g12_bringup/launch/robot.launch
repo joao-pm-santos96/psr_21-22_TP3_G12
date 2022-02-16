@@ -19,6 +19,7 @@
         <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
         <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
             <remap from="~input" to="camera/depth/points" />
+            <remap from="~output" to="depth/filtered" />
             <rosparam>
             filter_field_name: z
             filter_limit_min: 0.01
@@ -53,8 +54,9 @@
             <param name="local_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
             <param name="local_costmap/scan/sensor_frame" value="$(arg robot_name)/camera_rgb_optical_frame"/>
             <param name="local_costmap/scan/topic" value="scan"/>
- 
         </node>
+
+
 
         <include file="$(find g12_bringup)/launch/spawn.launch">
             <arg name="player_name" value="$(arg robot_name)"/>

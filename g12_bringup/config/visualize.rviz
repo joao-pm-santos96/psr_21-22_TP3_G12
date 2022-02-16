@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /PointCloud21
         - /Map1
       Splitter Ratio: 0.40442338585853577
     Tree Height: 443
@@ -182,7 +183,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /red1/voxel_grid/output
+      Topic: /red1/depth/filtered
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -225,7 +226,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.143172264099121
+      Distance: 0.031142815947532654
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -241,9 +242,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6697965860366821
+      Pitch: 0.5047967433929443
       Target Frame: <Fixed Frame>
-      Yaw: 3.229127883911133
+      Yaw: 3.6241300106048584
     Saved: ~
 Window Geometry:
   Displays:
