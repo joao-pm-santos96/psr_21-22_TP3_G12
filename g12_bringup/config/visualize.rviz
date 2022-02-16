@@ -5,11 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Status1
-        - /Image1
-        - /LaserScan1
-        - /RobotModel1
-        - /PointCloud21
       Splitter Ratio: 0.5
     Tree Height: 443
   - Class: rviz/Selection
@@ -191,11 +186,21 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /red1/map
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
     Default Light: true
-    Fixed Frame: red1/odom
+    Fixed Frame: red1/map
     Frame Rate: 30
   Name: root
   Tools:
@@ -219,7 +224,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.4179179668426514
+      Distance: 9.32889175415039
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -235,9 +240,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.779796302318573
+      Pitch: 1.104796051979065
       Target Frame: <Fixed Frame>
-      Yaw: 3.429133176803589
+      Yaw: 2.559124231338501
     Saved: ~
 Window Geometry:
   Displays:

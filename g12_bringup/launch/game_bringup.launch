@@ -24,6 +24,14 @@
             </rosparam>
         </node>
 
+        <!-- GMapping -->
+        <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen">
+            <!-- <remap from="scan" to="scan" /> -->
+            <!-- <param name="odom_frame" value="/red1/odom" /> -->
+            <!-- <param name="base_frame" value="/red1/base_link" /> -->
+            <param name="map_frame" value="red1/map" />
+        </node>
+
         <include file="$(find g12_bringup)/launch/spawn.launch">
             <arg name="player_name" value="red1"/>
             <arg name="x_pos" value="5"/>
