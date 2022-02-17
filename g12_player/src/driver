@@ -8,6 +8,10 @@ IMPORTS
 """
 import rospy
 
+import ros_numpy as ros_np
+import numpy as np
+
+from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PoseStamped
 
 """
@@ -47,9 +51,105 @@ class Driver:
         'green': rospy.get_param('/green_players'),
         'blue': rospy.get_param('/blue_players')}
 
+
+        self.color_thresholds = {'max': {
+            'r': np.array([255,10,10]),
+            'g': np.array([10,255,10]),
+            'b': np.array([10,10,255])
+        },
+        'min': {
+            'r': np.array([150,0,0]),
+            'g': np.array([0,150,0]),
+            'b': np.array([0,0,150])
+        }
+        }
+
         rospy.loginfo(f'My name is {self.name}. I am team {self.my_team} I am hunting {players[self.prey_team]} and fleeing from {players[self.hunter_team]}')
 
-        self.pose_pub = rospy.Publisher(f'/{self.name}/move_base_simple/goal', PoseStamped)
+        self.goal_pub = rospy.Publisher(f'/{self.name}/move_base_simple/goal', PoseStamped, queue_size=10)
+        
+        
+        rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self.pcCallback)
+
+
+
+
+
+
+
+
+    def pcCallback(self, pc):
+
+        cloud = ros_np.point_cloud2.pointcloud2_to_array(pc)
+        cloud = ros_np.point_cloud2.split_rgb_field(cloud)
+
+        red_cloud = []
+        red_dist = []
+        green_cloud = []
+        green_dist = []
+        blue_cloud = []
+        blue_dist = []
+
+        for p in cloud:
+
+            position = np.array([p[0], p[1], p[2]])
+            color = np.array([p[3], p[4], p[5]])
+
+            if np.all(color >= self.color_thresholds['min']['b']) and np.all(color < self.color_thresholds['max']['b']):
+                blue_cloud.append(p)
+                blue_dist.append(np.linalg.norm(position))
+            
+            elif np.all(color >= self.color_thresholds['min']['g']) and np.all(color < self.color_thresholds['max']['g']):
+                green_cloud.append(p)
+                green_dist.append(np.linalg.norm(position))
+
+            elif np.all(color >= self.color_thresholds['min']['r']) and np.all(color < self.color_thresholds['max']['r']):
+                red_cloud.append(p)
+                red_dist.append(np.linalg.norm(position))
+
+
+        positions = {}
+        distances = {}
+        if len(blue_cloud) > 0:
+            idx = np.argmin(blue_dist)
+            distances['blue'] = np.min(blue_dist)
+            positions['blue'] = blue_cloud[idx]
+
+        if len(green_cloud) > 0:
+            idx = np.argmin(green_dist)
+            distances['green'] = np.min(green_dist)
+            positions['green'] = green_cloud[idx]
+
+        if len(red_cloud) > 0:
+            idx = np.argmin(red_dist)
+            distances['red'] = np.min(red_dist)
+            positions['red'] = red_cloud[idx]
+
+
+        
+        # if 'blue' in positions.keys():
+        #     cenas = PoseStamped()
+        #     cenas.header.frame_id = pc.header.frame_id
+
+        #     cenas.pose.position.x = positions['blue'][0]
+        #     cenas.pose.position.y = positions['blue'][1]
+        #     cenas.pose.position.z = positions['blue'][2]
+
+        #     cenas.pose.orientation.w = 1.0
+
+
+        #     self.goal_pub.publish(cenas)
+
+        
+
+
+
+
+
+
+
+
+
 
 """
 FUNCTIONS DEFINITIONS
