@@ -12,7 +12,10 @@ import ros_numpy as ros_np
 import numpy as np
 
 from sensor_msgs.msg import PointCloud2
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Point
+
+import actionlib
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 """
 METADATA
@@ -70,6 +73,9 @@ class Driver:
         
         
         rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self.pcCallback)
+
+        # action client
+        self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
 
 
 
@@ -139,6 +145,33 @@ class Driver:
 
 
         #     self.goal_pub.publish(cenas)
+
+    def sendActionGoal(self, position):
+
+        self.action_c.wait_for_server()
+
+        goal = MoveBaseGoal()
+        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.header.frame_id = 
+        goal.target_pose.pose.position = position
+        goal.target_pose.pose.orientation = 
+
+
+
+        # TODO
+
+
+        self.action_c.send_goal(goal)
+
+        wait = self.action_c.wait_for_result()
+
+        return wait
+
+    def cancelGoals(self):
+        self.action_c.cancel_all_goals()
+
+
+
 
         
 
