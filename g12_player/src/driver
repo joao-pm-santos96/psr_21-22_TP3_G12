@@ -69,10 +69,13 @@ class Driver:
         }
         }
 
+        # data
         self.closest_obstacle = {'dist': 999, 'angle': 999}
+        self.hunter_detected = False
+        self.prey_detected = False
 
         # subscriptions
-        rospy.Subscriber(f'/{self.name}/scan', LaserScan, self.scanCallback)
+        rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
 
         # publications
         self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist)
@@ -91,14 +94,38 @@ class Driver:
         # self.tf_listener = tf.TransformListener()
 
 
-    def scanCallback(self, msg):
+    def _scanCallback(self, msg):
         self.closest_obstacle['dist'] = np.min(msg.ranges)
         self.closest_obstacle['angle'] = msg.angle_min + msg.angle_increment * np.argmin(msg.ranges)
 
+    def wander(self):
+
+        twist = Twist()
+
+        to_close = self.closest_obstacle['dist'] < 1.0
+        to_close_pos = 0 < self.closest_obstacle['angle'] <= np.pi/3
+        to_close_neg = np.pi*2-np.pi/3 < self.closest_obstacle['angle'] <= np.pi*2        
+        
+        if not (to_close and (to_close_pos or to_close_neg)):
+            # move forward
+            twist.linear.x = 0.25
+            twist.angular.z = 0
+
+        else:
+            # rotate
+            twist.linear.x = 0
+            twist.angular.z = 0.2 * (-1 if to_close_pos else 1)
+
+        self.cmd_vel_pub.publish(twist)
 
 
 
 
+
+
+    '''
+    TESTING AREA.... may lack comments... :(
+    '''
 
     def pcCallback(self, pc):
 
@@ -226,31 +253,7 @@ class Driver:
         self.action_c.cancel_all_goals()
 
 
-    def wander(self):
-
-        twist = Twist()
-
-        to_close = self.closest_obstacle['dist'] < 1.0
-        to_close_pos = 0 < self.closest_obstacle['angle'] <= np.pi/3
-        to_close_neg = np.pi*2-np.pi/3 < self.closest_obstacle['angle'] <= np.pi*2
-
-         
-        
-        if not (to_close and (to_close_pos or to_close_neg)):
-            # move forward
-            twist.linear.x = 0.25
-            twist.angular.z = 0
-
-        else:
-            twist.linear.x = 0
-            twist.angular.z = 0.2 * (-1 if to_close_pos else 1)
-
-
-
-
-
-
-        self.cmd_vel_pub.publish(twist)
+    
 
 
         
@@ -272,9 +275,29 @@ def main():
     rospy.init_node('g12_driver', anonymous=False)
 
     driver = Driver()
+    state = 'wander'
 
     while not rospy.is_shutdown():
-        driver.wander()
+
+        # state switch
+        if not (driver.prey_detected or driver.hunter_detected):
+            state = 'wander'
+
+        elif driver.hunter_detected:
+            state = 'flee'
+
+        elif driver.prey_detected:
+            state = 'hunt'
+        
+        # state action
+        if state == 'wander':
+            driver.wander()
+
+        elif state == 'hunt':
+            pass
+
+        elif state == 'flee':
+            pass
 
 
 
