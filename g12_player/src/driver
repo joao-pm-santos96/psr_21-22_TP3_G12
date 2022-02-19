@@ -9,15 +9,16 @@ IMPORTS
 from turtle import pos
 import rospy
 import tf
+import actionlib
 
 import ros_numpy as ros_np
 import numpy as np
 
 from sensor_msgs.msg import PointCloud2, LaserScan
 from geometry_msgs.msg import PoseStamped, Point, Quaternion, PointStamped, Twist
-
-import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from gazebo_msgs.msg import ContactsState
+
 
 """
 METADATA
@@ -73,9 +74,11 @@ class Driver:
         self.closest_obstacle = {'dist': 999, 'angle': 999}
         self.hunter_detected = False
         self.prey_detected = False
+        self.contact = False
 
         # subscriptions
         rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
+        rospy.Subscriber(f'/{self.name}/contact', ContactsState, self._contactCallback)
 
         # publications
         self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist)
@@ -98,6 +101,9 @@ class Driver:
         self.closest_obstacle['dist'] = np.min(msg.ranges)
         self.closest_obstacle['angle'] = msg.angle_min + msg.angle_increment * np.argmin(msg.ranges)
 
+    def _contactCallback(self, msg):
+        self.contact = bool(len(msg.states))
+
     def wander(self):
 
         twist = Twist()
@@ -111,10 +117,16 @@ class Driver:
             twist.linear.x = 0.25
             twist.angular.z = 0
 
+        elif self.contact:
+            # move backward
+            twist.linear.x = -0.25
+            twist.angular.z = 0
+
         else:
             # rotate
             twist.linear.x = 0
             twist.angular.z = 0.2 * (-1 if to_close_pos else 1)
+        
 
         self.cmd_vel_pub.publish(twist)
 

@@ -225,7 +225,7 @@
       </contact>
       <plugin name="base_link_contact_sensor_plugin" filename="libgazebo_ros_bumper.so">
         <bumperTopicName>contact</bumperTopicName>
-        <frameName>world</frameName>
+        <frameName>map</frameName>
       </plugin>
     </sensor>
 
