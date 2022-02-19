@@ -16,8 +16,8 @@
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
         <!-- Run a VoxelGrid filter to clean NaNs and downsample the data -->
-        <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
-        <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
+        <!-- <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" /> -->
+        <!-- <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
             <remap from="~input" to="camera/depth/points" />
             <remap from="~output" to="voxel_grid/output" />
             <rosparam>
@@ -27,10 +27,10 @@
             filter_limit_negative: False
             leaf_size: 0.025
             </rosparam>
-        </node>
+        </node> -->
 
         <!-- Estimate point normals -->
-        <node pkg="nodelet" type="nodelet" name="normal_estimation" args="load pcl/NormalEstimation pcl_manager" output="screen">
+        <!-- <node pkg="nodelet" type="nodelet" name="normal_estimation" args="load pcl/NormalEstimation pcl_manager" output="screen">
             <remap from="~input" to="voxel_grid/output" />
             <rosparam>
             # -[ Mandatory parameters
@@ -39,10 +39,10 @@
             # Set the spatial locator. Possible values are: 0 (ANN), 1 (FLANN), 2 (organized)
             spatial_locator: 0
             </rosparam>
-        </node>
+        </node> -->
 
         <!-- Segment the floor plane -->
-        <node pkg="nodelet" type="nodelet" name="planar_segmentation" args="load pcl/SACSegmentationFromNormals pcl_manager" output="screen">
+        <!-- <node pkg="nodelet" type="nodelet" name="planar_segmentation" args="load pcl/SACSegmentationFromNormals pcl_manager" output="screen">
             <remap from="~input"   to="voxel_grid/output" />
             <remap from="~normals" to="normal_estimation/output" />
             <rosparam>
@@ -77,26 +77,25 @@
             normal_distance_weight: 0.1
             eps_angle: 0.09
             </rosparam>
-        </node>
+        </node> -->
 
-        <node pkg="nodelet" type="nodelet" name="extract_ground" args="load pcl/ExtractIndices pcl_manager" output="screen">
+        <!-- <node pkg="nodelet" type="nodelet" name="extract_ground" args="load pcl/ExtractIndices pcl_manager" output="screen">
             <remap from="~input"   to="voxel_grid/output" />
             <remap from="~indices" to="planar_segmentation/inliers" />
             <rosparam>
             negative: true
             </rosparam>
-        </node>
+        </node> -->
 
         <!-- GMapping -->
-        <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen">
-            <!-- <remap from="scan" to="scan" /> -->
+        <!-- <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen">
             <param name="map_frame" value="/$(arg robot_name)/map" />
             <param name="odom_frame" value="/$(arg robot_name)/odom" />
             <param name="base_frame" value="/$(arg robot_name)/base_link" />
-        </node>
+        </node> -->
 
         <!-- move_base -->
-        <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <!-- <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
             <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />
             <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />
             <rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />
@@ -112,7 +111,7 @@
             <param name="local_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
             <param name="local_costmap/scan/sensor_frame" value="$(arg robot_name)/camera_rgb_optical_frame"/>
             <param name="local_costmap/scan/topic" value="scan"/>
-        </node>
+        </node> -->
 
 
 
