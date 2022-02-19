@@ -6,13 +6,15 @@
 """
 IMPORTS
 """
+from turtle import pos
 import rospy
+import tf
 
 import ros_numpy as ros_np
 import numpy as np
 
-from sensor_msgs.msg import PointCloud2
-from geometry_msgs.msg import PoseStamped, Point
+from sensor_msgs.msg import PointCloud2, LaserScan
+from geometry_msgs.msg import PoseStamped, Point, Quaternion, PointStamped, Twist
 
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -67,17 +69,31 @@ class Driver:
         }
         }
 
+        self.closest_obstacle = {'dist': 999, 'angle': 999}
+
+        # subscriptions
+        rospy.Subscriber(f'/{self.name}/scan', LaserScan, self.scanCallback)
+
+        # publications
+        self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist)
+
+        # ready
         rospy.loginfo(f'My name is {self.name}. I am team {self.my_team} I am hunting {players[self.prey_team]} and fleeing from {players[self.hunter_team]}')
 
-        self.goal_pub = rospy.Publisher(f'/{self.name}/move_base_simple/goal', PoseStamped, queue_size=10)
         
         
-        rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self.pcCallback)
+        # rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self.pcCallback)
 
-        # action client
-        self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
+        # # action client
+        # self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
 
 
+        # self.tf_listener = tf.TransformListener()
+
+
+    def scanCallback(self, msg):
+        self.closest_obstacle['dist'] = np.min(msg.ranges)
+        self.closest_obstacle['angle'] = msg.angle_min + msg.angle_increment * np.argmin(msg.ranges)
 
 
 
@@ -132,7 +148,13 @@ class Driver:
             positions['red'] = red_cloud[idx]
 
 
-        
+        point = Point()
+        point.x = positions['blue'][0]
+        point.y = positions['blue'][1]
+        point.z = positions['blue'][2]
+
+        self.sendActionGoal(point, pc.header.frame_id)
+
         # if 'blue' in positions.keys():
         #     cenas = PoseStamped()
         #     cenas.header.frame_id = pc.header.frame_id
@@ -146,31 +168,89 @@ class Driver:
 
         #     self.goal_pub.publish(cenas)
 
-    def sendActionGoal(self, position):
+    def sendActionGoal(self, position, frame):
 
         self.action_c.wait_for_server()
 
         goal = MoveBaseGoal()
-        goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.header.frame_id = 
-        goal.target_pose.pose.position = position
-        goal.target_pose.pose.orientation = 
+        orientation = Quaternion()
+        
+
+        print(frame)
+        try:
+            (trans,rot) = self.tf_listener.lookupTransform(f'{self.name}/map', f'{self.name}/odom', rospy.Time(0))
+            orientation.x = rot[0]
+            orientation.y = rot[1]
+            orientation.z = rot[2]
+            orientation.w = rot[3]
+
+            print(1)
+
+            (trans,rot) = self.tf_listener.lookupTransform(f'/{self.name}/map', frame, rospy.Time(0))
+
+            laser_point=PointStamped()
+            laser_point.header.frame_id = frame
+            laser_point.header.stamp =rospy.Time(0)
+            laser_point.point = position
+            p=self.tf_listener.transformPoint("red1/odom",laser_point)
+
+            print(2)
 
 
 
-        # TODO
 
 
-        self.action_c.send_goal(goal)
 
-        wait = self.action_c.wait_for_result()
+            goal.target_pose.header.stamp = rospy.Time.now()
+            goal.target_pose.header.frame_id = f'{self.name}/map'
+            goal.target_pose.pose.position = p.point
+            goal.target_pose.pose.orientation = orientation
 
-        return wait
+            rospy.loginfo('Sent new goal')
+
+
+
+            # TODO
+
+
+            self.action_c.send_goal(goal)
+
+            wait = self.action_c.wait_for_result()
+
+            return wait
+
+        except Exception as e:
+            rospy.logerr(e)
 
     def cancelGoals(self):
         self.action_c.cancel_all_goals()
 
 
+    def wander(self):
+
+        twist = Twist()
+
+        to_close = self.closest_obstacle['dist'] < 1.0
+        to_close_pos = 0 < self.closest_obstacle['angle'] <= np.pi/3
+        to_close_neg = np.pi*2-np.pi/3 < self.closest_obstacle['angle'] <= np.pi*2
+
+         
+        
+        if not (to_close and (to_close_pos or to_close_neg)):
+            # move forward
+            twist.linear.x = 0.25
+            twist.angular.z = 0
+
+        else:
+            twist.linear.x = 0
+            twist.angular.z = 0.2 * (-1 if to_close_pos else 1)
+
+
+
+
+
+
+        self.cmd_vel_pub.publish(twist)
 
 
         
@@ -192,7 +272,13 @@ def main():
     rospy.init_node('g12_driver', anonymous=False)
 
     driver = Driver()
-    rospy.spin()
+
+    while not rospy.is_shutdown():
+        driver.wander()
+
+
+
+    # rospy.spin()
 
 """
 MAIN
