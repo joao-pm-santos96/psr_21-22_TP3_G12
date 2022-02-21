@@ -6,13 +6,15 @@
 """
 IMPORTS
 """
-from turtle import pos
+import random
 import rospy
 import tf
 import actionlib
 
 import ros_numpy as ros_np
 import numpy as np
+
+from tf.transformations import quaternion_from_euler
 
 from sensor_msgs.msg import PointCloud2, LaserScan
 from geometry_msgs.msg import PoseStamped, Point, Quaternion, PointStamped, Twist
@@ -34,7 +36,7 @@ CLASS DEFINITIONS
 class Driver:
 
     def __init__(self):
-        
+
         self.name = rospy.get_name().strip('/')
         self.my_team = None
 
@@ -51,17 +53,17 @@ class Driver:
         }
         }
 
-        if 'red' in self.name:            
+        if 'red' in self.name:
             self.my_team = 'red'
             self.prey_team = 'green'
             self.hunter_team = 'blue'
-        
-        elif 'green' in self.name:            
+
+        elif 'green' in self.name:
             self.my_team = 'green'
             self.prey_team = 'blue'
             self.hunter_team = 'red'
-        
-        elif 'blue' in self.name:            
+
+        elif 'blue' in self.name:
             self.my_team = 'blue'
             self.prey_team = 'red'
             self.hunter_team = 'green'
@@ -80,7 +82,7 @@ class Driver:
         # params
         players = {'red': rospy.get_param('/red_players'),
         'green': rospy.get_param('/green_players'),
-        'blue': rospy.get_param('/blue_players')}       
+        'blue': rospy.get_param('/blue_players')}
 
         # subscriptions
         rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
@@ -88,7 +90,7 @@ class Driver:
         rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self._pcCallback)
 
         # publications
-        self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist, queue_size=10)
+        # self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist, queue_size=10)
 
         # actions
         self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
@@ -150,7 +152,7 @@ class Driver:
             if np.all(color >= self.color_thresholds['min']['b']) and np.all(color < self.color_thresholds['max']['b']):
                 blue_cloud.append(p)
                 blue_dist.append(np.linalg.norm(position))
-            
+
             elif np.all(color >= self.color_thresholds['min']['g']) and np.all(color < self.color_thresholds['max']['g']):
                 green_cloud.append(p)
                 green_dist.append(np.linalg.norm(position))
@@ -160,7 +162,7 @@ class Driver:
                 red_dist.append(np.linalg.norm(position))
 
         point = Point()
-        
+
         # for each RGB cloud, compute the closest point and distance
         for team, team_cloud, team_dist in zip(['red', 'green', 'blue'], [red_cloud, green_cloud, blue_cloud], [red_dist, green_dist, blue_dist]):
 
@@ -178,59 +180,27 @@ class Driver:
                 self.closest_players[team]['dist'] = np.min(team_dist)
                 self.closest_players[team]['point'] = point
 
-    def sendActionGoal(self, position, frame):
-        """Send action goal to path planner (action server: https://docs.ros.org/en/api/actionlib/html/index.html).
+    def sendGoal(self, goal):
+        """Send action goal.
 
         Args:
-            position (Point): position to reach.
-            frame (str): Frame where the position is relative to.
+            goal (MoveBaseGoal): The target pose.
 
         Returns:
-            _type_: the goal result.
+            _type_: _description_
         """
 
-        # wait for the action server to be ready
+        # wait for server to be ready
         self.action_c.wait_for_server()
 
-        goal = MoveBaseGoal()
-        orientation = Quaternion()       
+        # send the goal message
+        self.action_c.send_goal(goal)
 
-        try:
+        # wait for the action result
+        self.action_c.wait_for_result()
 
-            # try to maintain current orientation 
-            # TODO this should be smarter and not necessarily maintain the orientation
-            (_, rot) = self.tf_listener.lookupTransform(f'{self.name}/map', f'{self.name}/odom', rospy.Time(0))
-            
-            orientation.x = rot[0]
-            orientation.y = rot[1]
-            orientation.z = rot[2]
-            orientation.w = rot[3]
-
-            # convert the destination point to the same frame
-            self.tf_listener.lookupTransform(f'/{self.name}/map', frame, rospy.Time(0))
-            laser_point = PointStamped()
-            laser_point.header.frame_id = frame
-            laser_point.header.stamp =rospy.Time(0)
-            laser_point.point = position
-            p = self.tf_listener.transformPoint("red1/odom",laser_point)
-
-            # build the goal message
-            goal.target_pose.header.stamp = rospy.Time.now()
-            goal.target_pose.header.frame_id = f'{self.name}/map'
-            goal.target_pose.pose.position = p.point
-            goal.target_pose.pose.orientation = orientation
-
-            # send the goal message
-            self.action_c.send_goal(goal)
-
-            # wait for the action result
-            self.action_c.wait_for_result()
-
-            # return the result
-            return self.action_c.get_result()
-
-        except Exception as e:
-            rospy.logerr(e)
+        # return the result
+        return self.action_c.get_result()
 
     def cancelGoals(self):
         """Cancel all goals in the action server.
@@ -240,31 +210,48 @@ class Driver:
     def wander(self):
         """Wander mechanism.
         """
-        twist = Twist()
 
-        to_close = self.closest_obstacle['dist'] < 1.0
-        to_close_pos = 0 < self.closest_obstacle['angle'] <= np.pi/3
-        to_close_neg = np.pi*2-np.pi/3 < self.closest_obstacle['angle'] <= np.pi*2        
-        
-        if not (to_close and (to_close_pos or to_close_neg)):
-            # move forward
-            twist.linear.x = 0.25
-            twist.angular.z = 0
+        goal = MoveBaseGoal()
 
-        elif self.contact:
-            # move backward
-            twist.linear.x = -0.25
-            twist.angular.z = 0
+        delta = 2
+        x = random.uniform(0, delta)
+        y = random.uniform(0, delta)
+        ang = random.uniform(0, 2*np.pi)
 
-        else:
-            # rotate
-            twist.linear.x = 0
-            twist.angular.z = 0.2 * (-1 if to_close_pos else 1)
-        
-        self.cmd_vel_pub.publish(twist)
+        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.header.frame_id = f'{self.name}/base_footprint'
+
+        goal.target_pose.pose.position.x = x
+        goal.target_pose.pose.position.y = y
+        goal.target_pose.pose.position.z = 0.0
+
+        q = quaternion_from_euler(0,0,ang)
+
+        goal.target_pose.pose.orientation.x = q[0]
+        goal.target_pose.pose.orientation.y = q[1]
+        goal.target_pose.pose.orientation.z = q[2]
+        goal.target_pose.pose.orientation.w = q[3]
+
+        self.sendGoal(goal)
 
     def hunt(self):
-        self.sendActionGoal(self.closest_players[self.prey_team]['point'], self.closest_players['frame_id'])
+
+        goal = MoveBaseGoal()
+
+        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.header.frame_id = self.closest_players['frame_id']
+        goal.target_pose.pose.position = self.closest_players[self.prey_team]['point']
+
+        goal.target_pose.pose.orientation.x = 0
+        goal.target_pose.pose.orientation.y = 0
+        goal.target_pose.pose.orientation.z = 0
+        goal.target_pose.pose.orientation.w = 1
+
+        self.sendGoal(goal)
+
+
+
+
 
     def flee(self):
         pass
@@ -292,13 +279,13 @@ def main():
         # state switch
         if not (driver.prey_detected or driver.hunter_detected):
             state = 'wander'
-        
+
         elif driver.prey_detected:
             state = 'hunt'
 
         # elif driver.hunter_detected:
         #     state = 'flee'
-        
+
         # state action
         if state == 'wander':
             rospy.loginfo('Wandering...')
