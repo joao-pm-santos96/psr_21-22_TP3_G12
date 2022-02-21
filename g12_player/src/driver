@@ -72,6 +72,11 @@ class Driver:
 
         # data
         self.closest_obstacle = {'dist': 999, 'angle': 999}
+        self.closest_players = {
+            'red': {'point': None, 'dist': None},
+            'green': {'point': None, 'dist': None},
+            'blue': {'point': None, 'dist': None}
+        }
         self.hunter_detected = False
         self.prey_detected = False
         self.contact = False
@@ -79,22 +84,26 @@ class Driver:
         # subscriptions
         rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
         rospy.Subscriber(f'/{self.name}/contact', ContactsState, self._contactCallback)
+        rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self._pcCallback)
 
         # publications
-        self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist)
+        self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist, queue_size=10)
+
+        # actions
+        self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
 
         # ready
         rospy.loginfo(f'My name is {self.name}. I am team {self.my_team} I am hunting {players[self.prey_team]} and fleeing from {players[self.hunter_team]}')
 
         
         
-        # rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self.pcCallback)
+        # 
 
         # # action client
-        # self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
+        
 
 
-        # self.tf_listener = tf.TransformListener()
+        self.tf_listener = tf.TransformListener()
 
 
     def _scanCallback(self, msg):
@@ -139,15 +148,19 @@ class Driver:
     TESTING AREA.... may lack comments... :(
     '''
 
-    def pcCallback(self, pc):
+    def _pcCallback(self, pc):
+
+        rospy.loginfo('Cloud received')
 
         cloud = ros_np.point_cloud2.pointcloud2_to_array(pc)
         cloud = ros_np.point_cloud2.split_rgb_field(cloud)
 
         red_cloud = []
         red_dist = []
+
         green_cloud = []
         green_dist = []
+
         blue_cloud = []
         blue_dist = []
 
@@ -168,31 +181,36 @@ class Driver:
                 red_cloud.append(p)
                 red_dist.append(np.linalg.norm(position))
 
-
-        positions = {}
-        distances = {}
-        if len(blue_cloud) > 0:
-            idx = np.argmin(blue_dist)
-            distances['blue'] = np.min(blue_dist)
-            positions['blue'] = blue_cloud[idx]
-
-        if len(green_cloud) > 0:
-            idx = np.argmin(green_dist)
-            distances['green'] = np.min(green_dist)
-            positions['green'] = green_cloud[idx]
-
-        if len(red_cloud) > 0:
-            idx = np.argmin(red_dist)
-            distances['red'] = np.min(red_dist)
-            positions['red'] = red_cloud[idx]
-
-
         point = Point()
-        point.x = positions['blue'][0]
-        point.y = positions['blue'][1]
-        point.z = positions['blue'][2]
+        
+        for team, team_cloud, team_dist in zip(['red', 'green', 'blue'], [red_cloud, green_cloud, blue_cloud], [red_dist, green_dist, blue_dist]):
 
-        self.sendActionGoal(point, pc.header.frame_id)
+            if team == self.prey_team:
+                self.prey_detected = len(team_cloud) > 0
+            elif team == self.hunter_team:
+                self.hunter_detected = len(team_cloud) > 0
+
+            if len(team_cloud) > 0:
+                idx = np.argmin(team_dist)
+                point.x = team_cloud[idx][0]
+                point.y = team_cloud[idx][1]
+                point.z = team_cloud[idx][2]
+
+                self.closest_players[team]['dist'] = np.min(team_dist)
+                self.closest_players[team]['point'] = point
+
+        print(self.prey_team)
+        if self.prey_detected:
+            self.sendActionGoal(self.closest_players[self.prey_team]['point'], pc.header.frame_id)
+
+
+
+
+        # point.x = positions['blue'][0]
+        # point.y = positions['blue'][1]
+        # point.z = positions['blue'][2]
+
+        # self.sendActionGoal(point, pc.header.frame_id)
 
         # if 'blue' in positions.keys():
         #     cenas = PoseStamped()
@@ -286,6 +304,7 @@ def main():
 
     rospy.init_node('g12_driver', anonymous=False)
 
+    rate = rospy.Rate(10)
     driver = Driver()
     state = 'wander'
 
@@ -302,14 +321,16 @@ def main():
             state = 'hunt'
         
         # state action
-        if state == 'wander':
-            driver.wander()
+        # if state == 'wander':
+        #     driver.wander()
 
-        elif state == 'hunt':
-            pass
+        # elif state == 'hunt':
+        #     pass
 
-        elif state == 'flee':
-            pass
+        # elif state == 'flee':
+        #     pass
+
+        rate.sleep()
 
 
 
