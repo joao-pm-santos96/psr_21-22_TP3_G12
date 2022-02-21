@@ -38,6 +38,19 @@ class Driver:
         self.name = rospy.get_name().strip('/')
         self.my_team = None
 
+        # data
+        self.color_thresholds = {'max': {
+            'r': np.array([255,10,10]),
+            'g': np.array([10,255,10]),
+            'b': np.array([10,10,255])
+        },
+        'min': {
+            'r': np.array([150,0,0]),
+            'g': np.array([0,150,0]),
+            'b': np.array([0,0,150])
+        }
+        }
+
         if 'red' in self.name:            
             self.my_team = 'red'
             self.prey_team = 'green'
@@ -53,33 +66,21 @@ class Driver:
             self.prey_team = 'red'
             self.hunter_team = 'green'
 
-        players = {'red': rospy.get_param('/red_players'),
-        'green': rospy.get_param('/green_players'),
-        'blue': rospy.get_param('/blue_players')}
-
-
-        self.color_thresholds = {'max': {
-            'r': np.array([255,10,10]),
-            'g': np.array([10,255,10]),
-            'b': np.array([10,10,255])
-        },
-        'min': {
-            'r': np.array([150,0,0]),
-            'g': np.array([0,150,0]),
-            'b': np.array([0,0,150])
-        }
-        }
-
-        # data
         self.closest_obstacle = {'dist': 999, 'angle': 999}
         self.closest_players = {
             'red': {'point': None, 'dist': None},
             'green': {'point': None, 'dist': None},
-            'blue': {'point': None, 'dist': None}
+            'blue': {'point': None, 'dist': None},
+            'frame_id': None
         }
         self.hunter_detected = False
         self.prey_detected = False
         self.contact = False
+
+        # params
+        players = {'red': rospy.get_param('/red_players'),
+        'green': rospy.get_param('/green_players'),
+        'blue': rospy.get_param('/blue_players')}       
 
         # subscriptions
         rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
@@ -95,26 +96,150 @@ class Driver:
         # ready
         rospy.loginfo(f'My name is {self.name}. I am team {self.my_team} I am hunting {players[self.prey_team]} and fleeing from {players[self.hunter_team]}')
 
-        
-        
-        # 
-
-        # # action client
-        
-
-
+        # tf
         self.tf_listener = tf.TransformListener()
 
 
     def _scanCallback(self, msg):
+        """Callback used to update obstacle data using laser scan data.
+
+        Args:
+            msg (LaserScan): received laser scan.
+        """
         self.closest_obstacle['dist'] = np.min(msg.ranges)
         self.closest_obstacle['angle'] = msg.angle_min + msg.angle_increment * np.argmin(msg.ranges)
 
     def _contactCallback(self, msg):
+        """Callback used to update contact detection data.
+
+        Args:
+            msg (ContactsState): contact state.
+        """
         self.contact = bool(len(msg.states))
 
-    def wander(self):
+    def _pcCallback(self, pc):
+        """Callback used to update players data when a point cloud (colored) is received.
 
+        Args:
+            pc (PointCloud2): point cloud (colored) received.
+        """
+
+        # convert PointCloud2 to np.array with fields [x,y,z,r,g,b]
+        cloud = ros_np.point_cloud2.pointcloud2_to_array(pc)
+        cloud = ros_np.point_cloud2.split_rgb_field(cloud)
+
+        # store frame_id
+        self.closest_players['frame_id'] = pc.header.frame_id
+
+        red_cloud = []
+        red_dist = []
+
+        green_cloud = []
+        green_dist = []
+
+        blue_cloud = []
+        blue_dist = []
+
+        # create three "sub clouds" based on the RGB colors (threshold)
+        # also, compute distances
+        for p in cloud:
+
+            position = np.array([p[0], p[1], p[2]])
+            color = np.array([p[3], p[4], p[5]])
+
+            if np.all(color >= self.color_thresholds['min']['b']) and np.all(color < self.color_thresholds['max']['b']):
+                blue_cloud.append(p)
+                blue_dist.append(np.linalg.norm(position))
+            
+            elif np.all(color >= self.color_thresholds['min']['g']) and np.all(color < self.color_thresholds['max']['g']):
+                green_cloud.append(p)
+                green_dist.append(np.linalg.norm(position))
+
+            elif np.all(color >= self.color_thresholds['min']['r']) and np.all(color < self.color_thresholds['max']['r']):
+                red_cloud.append(p)
+                red_dist.append(np.linalg.norm(position))
+
+        point = Point()
+        
+        # for each RGB cloud, compute the closest point and distance
+        for team, team_cloud, team_dist in zip(['red', 'green', 'blue'], [red_cloud, green_cloud, blue_cloud], [red_dist, green_dist, blue_dist]):
+
+            if team == self.prey_team:
+                self.prey_detected = len(team_cloud) > 0
+            elif team == self.hunter_team:
+                self.hunter_detected = len(team_cloud) > 0
+
+            if len(team_cloud) > 0:
+                idx = np.argmin(team_dist)
+                point.x = team_cloud[idx][0]
+                point.y = team_cloud[idx][1]
+                point.z = team_cloud[idx][2]
+
+                self.closest_players[team]['dist'] = np.min(team_dist)
+                self.closest_players[team]['point'] = point
+
+    def sendActionGoal(self, position, frame):
+        """Send action goal to path planner (action server: https://docs.ros.org/en/api/actionlib/html/index.html).
+
+        Args:
+            position (Point): position to reach.
+            frame (str): Frame where the position is relative to.
+
+        Returns:
+            _type_: the goal result.
+        """
+
+        # wait for the action server to be ready
+        self.action_c.wait_for_server()
+
+        goal = MoveBaseGoal()
+        orientation = Quaternion()       
+
+        try:
+
+            # try to maintain current orientation 
+            # TODO this should be smarter and not necessarily maintain the orientation
+            (_, rot) = self.tf_listener.lookupTransform(f'{self.name}/map', f'{self.name}/odom', rospy.Time(0))
+            
+            orientation.x = rot[0]
+            orientation.y = rot[1]
+            orientation.z = rot[2]
+            orientation.w = rot[3]
+
+            # convert the destination point to the same frame
+            self.tf_listener.lookupTransform(f'/{self.name}/map', frame, rospy.Time(0))
+            laser_point = PointStamped()
+            laser_point.header.frame_id = frame
+            laser_point.header.stamp =rospy.Time(0)
+            laser_point.point = position
+            p = self.tf_listener.transformPoint("red1/odom",laser_point)
+
+            # build the goal message
+            goal.target_pose.header.stamp = rospy.Time.now()
+            goal.target_pose.header.frame_id = f'{self.name}/map'
+            goal.target_pose.pose.position = p.point
+            goal.target_pose.pose.orientation = orientation
+
+            # send the goal message
+            self.action_c.send_goal(goal)
+
+            # wait for the action result
+            self.action_c.wait_for_result()
+
+            # return the result
+            return self.action_c.get_result()
+
+        except Exception as e:
+            rospy.logerr(e)
+
+    def cancelGoals(self):
+        """Cancel all goals in the action server.
+        """
+        self.action_c.cancel_all_goals()
+
+    def wander(self):
+        """Wander mechanism.
+        """
         twist = Twist()
 
         to_close = self.closest_obstacle['dist'] < 1.0
@@ -136,163 +261,17 @@ class Driver:
             twist.linear.x = 0
             twist.angular.z = 0.2 * (-1 if to_close_pos else 1)
         
-
         self.cmd_vel_pub.publish(twist)
 
+    def hunt(self):
+        self.sendActionGoal(self.closest_players[self.prey_team]['point'], self.closest_players['frame_id'])
 
-
-
-
+    def flee(self):
+        pass
 
     '''
     TESTING AREA.... may lack comments... :(
     '''
-
-    def _pcCallback(self, pc):
-
-        rospy.loginfo('Cloud received')
-
-        cloud = ros_np.point_cloud2.pointcloud2_to_array(pc)
-        cloud = ros_np.point_cloud2.split_rgb_field(cloud)
-
-        red_cloud = []
-        red_dist = []
-
-        green_cloud = []
-        green_dist = []
-
-        blue_cloud = []
-        blue_dist = []
-
-        for p in cloud:
-
-            position = np.array([p[0], p[1], p[2]])
-            color = np.array([p[3], p[4], p[5]])
-
-            if np.all(color >= self.color_thresholds['min']['b']) and np.all(color < self.color_thresholds['max']['b']):
-                blue_cloud.append(p)
-                blue_dist.append(np.linalg.norm(position))
-            
-            elif np.all(color >= self.color_thresholds['min']['g']) and np.all(color < self.color_thresholds['max']['g']):
-                green_cloud.append(p)
-                green_dist.append(np.linalg.norm(position))
-
-            elif np.all(color >= self.color_thresholds['min']['r']) and np.all(color < self.color_thresholds['max']['r']):
-                red_cloud.append(p)
-                red_dist.append(np.linalg.norm(position))
-
-        point = Point()
-        
-        for team, team_cloud, team_dist in zip(['red', 'green', 'blue'], [red_cloud, green_cloud, blue_cloud], [red_dist, green_dist, blue_dist]):
-
-            if team == self.prey_team:
-                self.prey_detected = len(team_cloud) > 0
-            elif team == self.hunter_team:
-                self.hunter_detected = len(team_cloud) > 0
-
-            if len(team_cloud) > 0:
-                idx = np.argmin(team_dist)
-                point.x = team_cloud[idx][0]
-                point.y = team_cloud[idx][1]
-                point.z = team_cloud[idx][2]
-
-                self.closest_players[team]['dist'] = np.min(team_dist)
-                self.closest_players[team]['point'] = point
-
-        print(self.prey_team)
-        if self.prey_detected:
-            self.sendActionGoal(self.closest_players[self.prey_team]['point'], pc.header.frame_id)
-
-
-
-
-        # point.x = positions['blue'][0]
-        # point.y = positions['blue'][1]
-        # point.z = positions['blue'][2]
-
-        # self.sendActionGoal(point, pc.header.frame_id)
-
-        # if 'blue' in positions.keys():
-        #     cenas = PoseStamped()
-        #     cenas.header.frame_id = pc.header.frame_id
-
-        #     cenas.pose.position.x = positions['blue'][0]
-        #     cenas.pose.position.y = positions['blue'][1]
-        #     cenas.pose.position.z = positions['blue'][2]
-
-        #     cenas.pose.orientation.w = 1.0
-
-
-        #     self.goal_pub.publish(cenas)
-
-    def sendActionGoal(self, position, frame):
-
-        self.action_c.wait_for_server()
-
-        goal = MoveBaseGoal()
-        orientation = Quaternion()
-        
-
-        print(frame)
-        try:
-            (trans,rot) = self.tf_listener.lookupTransform(f'{self.name}/map', f'{self.name}/odom', rospy.Time(0))
-            orientation.x = rot[0]
-            orientation.y = rot[1]
-            orientation.z = rot[2]
-            orientation.w = rot[3]
-
-            print(1)
-
-            (trans,rot) = self.tf_listener.lookupTransform(f'/{self.name}/map', frame, rospy.Time(0))
-
-            laser_point=PointStamped()
-            laser_point.header.frame_id = frame
-            laser_point.header.stamp =rospy.Time(0)
-            laser_point.point = position
-            p=self.tf_listener.transformPoint("red1/odom",laser_point)
-
-            print(2)
-
-
-
-
-
-
-            goal.target_pose.header.stamp = rospy.Time.now()
-            goal.target_pose.header.frame_id = f'{self.name}/map'
-            goal.target_pose.pose.position = p.point
-            goal.target_pose.pose.orientation = orientation
-
-            rospy.loginfo('Sent new goal')
-
-
-
-            # TODO
-
-
-            self.action_c.send_goal(goal)
-
-            wait = self.action_c.wait_for_result()
-
-            return wait
-
-        except Exception as e:
-            rospy.logerr(e)
-
-    def cancelGoals(self):
-        self.action_c.cancel_all_goals()
-
-
-    
-
-
-        
-
-
-
-
-
-
 
 
 
@@ -313,28 +292,27 @@ def main():
         # state switch
         if not (driver.prey_detected or driver.hunter_detected):
             state = 'wander'
-
-        elif driver.hunter_detected:
-            state = 'flee'
-
+        
         elif driver.prey_detected:
             state = 'hunt'
+
+        # elif driver.hunter_detected:
+        #     state = 'flee'
         
         # state action
-        # if state == 'wander':
-        #     driver.wander()
+        if state == 'wander':
+            rospy.loginfo('Wandering...')
+            driver.wander()
 
-        # elif state == 'hunt':
-        #     pass
+        elif state == 'hunt':
+            rospy.loginfo('Hunting!')
+            driver.hunt()
 
         # elif state == 'flee':
         #     pass
 
         rate.sleep()
 
-
-
-    # rospy.spin()
 
 """
 MAIN
