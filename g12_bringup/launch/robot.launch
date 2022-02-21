@@ -103,7 +103,9 @@
             <rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />
             <rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
 
+            <param name="base_global_planner" value="carrot_planner/CarrotPlanner" />
             <param name="DWAPlannerROS/xy_goal_tolerance" value="5"/>
+
             <param name="global_costmap/global_frame" value="$(arg robot_name)/map"/>
             <param name="global_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
             <param name="global_costmap/scan/sensor_frame" value="$(arg robot_name)/camera_rgb_optical_frame"/>
