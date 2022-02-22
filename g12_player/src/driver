@@ -180,6 +180,10 @@ class Driver:
 
                 self.closest_players[team]['dist'] = np.min(team_dist)
                 self.closest_players[team]['point'] = point
+            
+            else:
+                self.closest_players[team]['dist'] = None
+                self.closest_players[team]['point'] = None
 
     def sendGoal(self, goal):
         """Send action goal.
@@ -267,7 +271,36 @@ class Driver:
     '''
 
 
+    def computeAction(self):
 
+        flee = 'flee'
+        wander = 'wander'
+        hunt = 'hunt'
+
+        goal_ongoing = self.getState() in [GoalStatus.PENDING, GoalStatus.ACTIVE]
+
+        if self.closest_players[self.hunter_team]['dist'] is not None \
+            and self.closest_players[self.prey_team]['dist'] is not None:
+
+            hunter_is_closest = self.closest_players[self.hunter_team]['dist'] < self.closest_players[self.prey_team]['dist']
+
+
+
+
+        if not (self.prey_detected or self.hunter_detected) and not goal_ongoing:
+            return wander
+
+        elif (self.prey_detected and not self.hunter_detected):
+            return hunt
+
+        elif (not self.prey_detected and self.hunter_detected):
+            return flee
+
+        elif (self.prey_detected and self.hunter_detected) and hunter_is_closest:
+            return flee
+
+        elif (self.prey_detected and self.hunter_detected) and not hunter_is_closest:
+            return hunt
 
 """
 FUNCTIONS DEFINITIONS
@@ -282,22 +315,24 @@ def main():
 
     while not rospy.is_shutdown():
 
-        if not (driver.prey_detected or driver.hunter_detected) and driver.getState() not in [GoalStatus.PENDING, GoalStatus.ACTIVE]:
+        action = driver.computeAction()
+
+        if action == 'wander' and action != state:
             rospy.loginfo('Wandering...')
             state = 'wander'
-            driver.wander()
+            # driver.wander()
 
-        elif state != 'hunt' and driver.prey_detected and not driver.hunter_detected:
+        elif action == 'hunt' and action != state:
             rospy.loginfo('Hunting!')
             state = 'hunt'
-            driver.cancelGoals()
-            driver.hunt()
+            # driver.cancelGoals()
+            # driver.hunt()
 
-        elif state != 'flee' and driver.hunter_detected:
+        elif action == 'flee' and action != state:
             rospy.loginfo('Fleeing...')
             state = 'flee'
-            driver.cancelGoals()
-            driver.flee()
+            # driver.cancelGoals()
+            # driver.flee()
 
         
 
