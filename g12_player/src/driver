@@ -85,8 +85,8 @@ class Driver:
         'blue': rospy.get_param('/blue_players')}
 
         # subscriptions
-        rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
-        rospy.Subscriber(f'/{self.name}/contact', ContactsState, self._contactCallback)
+        # rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
+        # rospy.Subscriber(f'/{self.name}/contact', ContactsState, self._contactCallback)
         rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self._pcCallback)
 
         # publications
