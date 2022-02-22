@@ -20,6 +20,7 @@ from sensor_msgs.msg import PointCloud2, LaserScan
 from geometry_msgs.msg import PoseStamped, Point, Quaternion, PointStamped, Twist
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from gazebo_msgs.msg import ContactsState
+from actionlib_msgs.msg import GoalStatus
 
 
 """
@@ -197,10 +198,14 @@ class Driver:
         self.action_c.send_goal(goal)
 
         # wait for the action result
-        self.action_c.wait_for_result()
+        # self.action_c.wait_for_result()
 
         # return the result
-        return self.action_c.get_result()
+        # return self.action_c.get_result()
+
+    def getState(self):
+
+        return self.action_c.get_state()
 
     def cancelGoals(self):
         """Cancel all goals in the action server.
@@ -213,13 +218,13 @@ class Driver:
 
         goal = MoveBaseGoal()
 
-        delta = 2
+        delta = 1
         x = random.uniform(0, delta)
         y = random.uniform(0, delta)
-        ang = random.uniform(0, 2*np.pi)
+        ang = random.uniform(-np.pi/2, np.pi/2)
 
         goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.header.frame_id = f'{self.name}/base_footprint'
+        goal.target_pose.header.frame_id = f'{self.name}/base_link'
 
         goal.target_pose.pose.position.x = x
         goal.target_pose.pose.position.y = y
@@ -233,6 +238,7 @@ class Driver:
         goal.target_pose.pose.orientation.w = q[3]
 
         self.sendGoal(goal)
+
 
     def hunt(self):
 
@@ -272,31 +278,47 @@ def main():
 
     rate = rospy.Rate(10)
     driver = Driver()
-    state = 'wander'
+    state = ''
 
     while not rospy.is_shutdown():
 
-        # state switch
-        if not (driver.prey_detected or driver.hunter_detected):
-            state = 'wander'
-
-        elif driver.prey_detected:
-            state = 'hunt'
-
-        # elif driver.hunter_detected:
-        #     state = 'flee'
-
-        # state action
-        if state == 'wander':
+        if not (driver.prey_detected or driver.hunter_detected) and driver.getState() not in [GoalStatus.PENDING, GoalStatus.ACTIVE]:
             rospy.loginfo('Wandering...')
+            state = 'wander'
             driver.wander()
 
-        elif state == 'hunt':
+        elif state != 'hunt' and driver.prey_detected and not driver.hunter_detected:
             rospy.loginfo('Hunting!')
+            state = 'hunt'
+            driver.cancelGoals()
             driver.hunt()
 
-        # elif state == 'flee':
-        #     pass
+        elif state != 'flee' and driver.hunter_detected:
+            rospy.loginfo('Fleeing...')
+            state = 'flee'
+            driver.cancelGoals()
+            driver.flee()
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         rate.sleep()
 
