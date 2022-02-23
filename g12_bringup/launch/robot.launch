@@ -4,6 +4,7 @@
     <arg name="x_pos" default="0"/>
     <arg name="y_pos" default="0"/>
     <arg name="z_pos" default="0"/>
+    <arg name="driver" default="false"/>
 
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
 
@@ -118,13 +119,16 @@
             <param name="local_costmap/scan/topic" value="scan"/>
         </node>
 
-
-
         <include file="$(find g12_bringup)/launch/spawn.launch">
             <arg name="player_name" value="$(arg robot_name)"/>
             <arg name="x_pos" value="$(arg x_pos)"/>
             <arg name="y_pos" value="$(arg y_pos)"/>
             <arg name="z_pos" value="$(arg z_pos)"/>
         </include>
+
+        <group if="$(arg driver)">
+            <node pkg="g12_driver" type="driver" name="$(arg robot_name)" output="scree"/>
+        </group>
+
     </group>
 </launch>
