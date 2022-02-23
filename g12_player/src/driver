@@ -287,6 +287,8 @@ class Driver:
 
     def computeAction(self):
 
+        # TODO re-evaluate distance and goal
+
         flee = 'flee'
         wander = 'wander'
         hunt = 'hunt'

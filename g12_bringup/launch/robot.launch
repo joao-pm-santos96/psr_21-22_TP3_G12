@@ -127,7 +127,7 @@
         </include>
 
         <group if="$(arg driver)">
-            <node pkg="g12_driver" type="driver" name="$(arg robot_name)" output="scree"/>
+            <node pkg="g12_driver" type="driver" name="$(arg robot_name)" output="screen"/>
         </group>
 
     </group>
