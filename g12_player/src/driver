@@ -243,8 +243,9 @@ class Driver:
 
         self.sendGoal(goal)
 
-
     def hunt(self):
+        """Hunting mechanism.
+        """
 
         goal = MoveBaseGoal()
 
@@ -252,6 +253,7 @@ class Driver:
         goal.target_pose.header.frame_id = self.closest_players['frame_id']
         goal.target_pose.pose.position = self.closest_players[self.prey_team]['point']
 
+        # TODO better orientation
         goal.target_pose.pose.orientation.x = 0
         goal.target_pose.pose.orientation.y = 0
         goal.target_pose.pose.orientation.z = 0
@@ -259,12 +261,24 @@ class Driver:
 
         self.sendGoal(goal)
 
-
-
-
-
     def flee(self):
-        pass
+        
+        goal = MoveBaseGoal()
+
+        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.header.frame_id = self.closest_players['frame_id']
+        goal.target_pose.pose.position = self.closest_players[self.hunter_team]['point']
+
+        goal.target_pose.pose.position.x *= -1
+        goal.target_pose.pose.position.y *= -1
+
+        # TODO better orientation
+        goal.target_pose.pose.orientation.x = 0
+        goal.target_pose.pose.orientation.y = 0
+        goal.target_pose.pose.orientation.z = 0
+        goal.target_pose.pose.orientation.w = 1
+
+        self.sendGoal(goal)
 
     '''
     TESTING AREA.... may lack comments... :(
@@ -320,19 +334,19 @@ def main():
         if action == 'wander' and action != state:
             rospy.loginfo('Wandering...')
             state = 'wander'
-            # driver.wander()
+            driver.wander()
 
         elif action == 'hunt' and action != state:
             rospy.loginfo('Hunting!')
             state = 'hunt'
-            # driver.cancelGoals()
-            # driver.hunt()
+            driver.cancelGoals()
+            driver.hunt()
 
         elif action == 'flee' and action != state:
             rospy.loginfo('Fleeing...')
             state = 'flee'
-            # driver.cancelGoals()
-            # driver.flee()
+            driver.cancelGoals()
+            driver.flee()
 
         
 
