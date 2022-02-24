@@ -16,6 +16,7 @@ import numpy as np
 
 from tf.transformations import quaternion_from_euler
 
+from std_msgs.msg import Float64
 from sensor_msgs.msg import PointCloud2, LaserScan
 from geometry_msgs.msg import PoseStamped, Point, Quaternion, PointStamped, Twist
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -92,6 +93,7 @@ class Driver:
 
         # publications
         # self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist, queue_size=10)
+        self.cmd_joint = rospy.Publisher(f'{self.name}/?/command', Float64, queue_size=10)
 
         # actions
         self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
@@ -185,14 +187,19 @@ class Driver:
                 self.closest_players[team]['dist'] = None
                 self.closest_players[team]['point'] = None
 
+    def sendJoint(self, joint):
+        """Send joint value to controller.
+
+        Args:
+            joint (Float64): Joint value.
+        """
+        self.cmd_joint.publish(joint)
+
     def sendGoal(self, goal):
         """Send action goal.
 
         Args:
             goal (MoveBaseGoal): The target pose.
-
-        Returns:
-            _type_: _description_
         """
 
         # wait for server to be ready
@@ -208,7 +215,12 @@ class Driver:
         # return self.action_c.get_result()
 
     def getState(self):
+        """Get state of the action.
 
+        Returns:
+            GoalStatus: Status.
+        """
+        
         return self.action_c.get_state()
 
     def cancelGoals(self):
@@ -262,6 +274,8 @@ class Driver:
         self.sendGoal(goal)
 
     def flee(self):
+        """Flee mechanism.
+        """
         
         goal = MoveBaseGoal()
 
@@ -350,28 +364,10 @@ def main():
             driver.cancelGoals()
             driver.flee()
 
+        rate.sleep()
         
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        rate.sleep()
 
 
 """
