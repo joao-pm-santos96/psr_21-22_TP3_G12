@@ -1,15 +1,23 @@
 <launch>
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
     <arg name="player_name" default="g12"/>
+    <arg name="keyboard" default="True"/>
 
     <!-- Use a player_name namespace to get unique topic names, services, parameters, etc.-->
     <group ns="$(arg player_name)">
 
-      <!-- turtlebot3_teleop_key already has its own built in velocity smoother -->
-      <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="teleop_rqt"  output="screen">
-<!--        <param name="~default_topic" value="/$(arg player_name)/differential_drive_controller/cmd_vel"></param>-->
-        <param name="~default_topic" value="/$(arg player_name)/cmd_vel"></param>
-      </node>
+      <!-- Use keyboard -->
+      <group if="$(arg keyboard)">
+        <node pkg="turtlebot3_teleop" type="turtlebot3_teleop_key" name="turtlebot3_teleop_keyboard" output="screen">
+        </node>
+      </group>
+
+      <!-- Use GUI -->
+      <group unless="$(arg keyboard)">
+        <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="teleop_rqt"  output="screen">
+          <param name="~default_topic" value="/$(arg player_name)/cmd_vel"/>
+        </node>
+      </group>
 
     </group>
 
