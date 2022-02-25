@@ -145,6 +145,21 @@
     </sensor>
   </gazebo>
 
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/red1</robotNamespace>
+    </plugin>
+  </gazebo>
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="camera_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor1">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
   <!--link : https://www.raspberrypi.org/documentation/hardware/camera/-->
   <!-- <gazebo reference="camera_rgb_frame">
     <sensor type="camera" name="Pi Camera">
