@@ -28,7 +28,6 @@
       <geometry>
         <mesh filename="package://turtlebot3_description/meshes/bases/waffle_pi_base.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-<!--      <material name="light_black"/>-->
       <material name="$(arg player_color)"/>
     </visual>
 
@@ -222,7 +221,7 @@
     </inertial>
     <visual>
       <geometry>
-        <box size="0.015 0.030 0.027" />
+        <mesh filename="package://g12_description/meshes/kinect_camera_simple.stl" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
   </link>
