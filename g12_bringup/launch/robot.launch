@@ -8,24 +8,22 @@
 
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
     
-
-
     <group ns="$(arg robot_name)">
 
         <param name="tf_prefix" value="$(arg robot_name)"/>
 
         <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=$(arg robot_name) player_color:=$(arg robot_color)"/>
 
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
             <param name="publish_frequency" type="double" value="30.0"/>
-            <remap from="/joint_states" to="/red1/joint_states"/>
-        </node>
-        <!-- load the controllers -->
-        <rosparam file="$(find g12_bringup)/config/config.yaml" command="load"/>
-        <node name="controller_spawner" pkg ="controller_manager" type="spawner" ns="/red1" 
-            args="joint_state_controller kinect_state_controller --shutdown-timeout 3">
+            <remap from="/joint_states" to="joint_states"/>
         </node>
 
+        <!-- load the controllers -->
+        <rosparam file="$(find g12_bringup)/config/config.yaml" command="load"/>
+        <node name="controller_spawner" pkg ="controller_manager" type="spawner" ns="$(arg robot_color)" 
+            args="joint_state_controller kinect_state_controller --shutdown-timeout 3">
+        </node>
             
         <!-- Run a VoxelGrid filter to clean NaNs and downsample the data -->
         <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
