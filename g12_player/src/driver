@@ -51,8 +51,7 @@ class Driver:
         'min': {
             'r': np.array([150,0,0]),
             'g': np.array([0,150,0]),
-            'b': np.array([0,0,150])
-        }
+            'b': np.array([0,0,150])}
         }
 
         if 'red' in self.name:
@@ -87,7 +86,7 @@ class Driver:
         'blue': rospy.get_param('/blue_players')}
 
         # subscriptions
-        # rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
+        rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
         # rospy.Subscriber(f'/{self.name}/contact', ContactsState, self._contactCallback)
         rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self._pcCallback)
 
@@ -113,6 +112,8 @@ class Driver:
         """
         self.closest_obstacle['dist'] = np.min(msg.ranges)
         self.closest_obstacle['angle'] = msg.angle_min + msg.angle_increment * np.argmin(msg.ranges)
+
+        self.sendJoint(self.closest_obstacle['angle'])
 
     def _contactCallback(self, msg):
         """Callback used to update contact detection data.
@@ -350,19 +351,19 @@ def main():
         if action == 'wander' and action != state:
             rospy.loginfo('Wandering...')
             state = 'wander'
-            driver.wander()
+            # driver.wander()
 
         elif action == 'hunt' and action != state:
             rospy.loginfo('Hunting!')
             state = 'hunt'
             driver.cancelGoals()
-            driver.hunt()
+            # driver.hunt()
 
         elif action == 'flee' and action != state:
             rospy.loginfo('Fleeing...')
             state = 'flee'
             driver.cancelGoals()
-            driver.flee()
+            # driver.flee()
 
         rate.sleep()
         
