@@ -41,7 +41,6 @@
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="1.3729096e+00"/>
-<!--      <mass value="100.3729096e+00"/>-->
       <inertia ixx="8.7002718e-03" ixy="-4.7576583e-05" ixz="1.1160499e-04"
                iyy="8.6195418e-03" iyz="-3.5422299e-06"
                izz="1.4612727e-02" />
@@ -198,32 +197,33 @@
   </link>
 
   <joint name="camera_joint" type="continuous">
-<!--    <origin xyz="0.073 -0.011 0.084" rpy="0 0 0"/>-->
-    <origin xyz="0.073 -0.011 0.584" rpy="0 0.45 0"/>
+    <origin xyz="-0.1 0.0 0.3" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="camera_link"/>
     <axis xyz="0 0 1"/>    
   </joint>
 
   <link name="camera_link">
-    <origin xyz="0.005 0.011 0.013" rpy="0.0 0.0 0.0"/>
     <collision>
+      <origin xyz="0.005 0.011 0.013" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.0315" radius="0.055"/>
-        <box size="0.015 0.030 0.027"/>
+        <mesh filename="package://g12_description/meshes/kinect_camera_simple.stl" scale="1.0 1.0 1.0"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.114" />
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
-               iyy="0.001" iyz="0.0"
-               izz="0.001" />
-    </inertial>
+
     <visual>
       <geometry>
         <mesh filename="package://g12_description/meshes/kinect_camera_simple.stl" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
+
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <mass value="0.001" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+               iyy="0.001" iyz="0.0"
+               izz="0.001" />
+    </inertial>
   </link>
 
   <joint name="camera_rgb_joint" type="fixed">

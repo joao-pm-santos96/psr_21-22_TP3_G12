@@ -28,7 +28,7 @@ from actionlib_msgs.msg import GoalStatus
 METADATA
 """
 
-"""
+"""gazebo.xa
 TODO
 """
 
@@ -93,7 +93,7 @@ class Driver:
 
         # publications
         # self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist, queue_size=10)
-        self.cmd_joint = rospy.Publisher(f'{self.name}/?/command', Float64, queue_size=10)
+        self.cmd_joint = rospy.Publisher(f'{self.name}/kinect_position_controller/command', Float64, queue_size=10)
 
         # actions
         self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
