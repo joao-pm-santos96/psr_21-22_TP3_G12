@@ -351,19 +351,19 @@ def main():
         if action == 'wander' and action != state:
             rospy.loginfo('Wandering...')
             state = 'wander'
-            # driver.wander()
+            driver.wander()
 
         elif action == 'hunt' and action != state:
             rospy.loginfo('Hunting!')
             state = 'hunt'
             driver.cancelGoals()
-            # driver.hunt()
+            driver.hunt()
 
         elif action == 'flee' and action != state:
             rospy.loginfo('Fleeing...')
             state = 'flee'
             driver.cancelGoals()
-            # driver.flee()
+            driver.flee()
 
         rate.sleep()
         
