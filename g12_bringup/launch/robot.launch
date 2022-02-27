@@ -4,7 +4,7 @@
     <arg name="x_pos" default="0"/>
     <arg name="y_pos" default="0"/>
     <arg name="z_pos" default="0"/>
-    <arg name="driver" default="false"/>
+    <arg name="run_driver" default="false"/>
 
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
     
@@ -27,16 +27,6 @@
         <!-- load joint controllers -->
         <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
             output="screen" ns="/$(arg robot_name)" args="kinect_position_controller joint_state_controller"/>
-
-
-
-
-
-
-        
-
-
-
             
         <!-- Run a VoxelGrid filter to clean NaNs and downsample the data -->
         <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
@@ -120,7 +110,6 @@
         <!-- move_base -->
         <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
 
-
             <rosparam file="$(find g12_bringup)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
             <rosparam file="$(find g12_bringup)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
             <rosparam file="$(find g12_bringup)/config/local_costmap_params.yaml" command="load" />
@@ -128,41 +117,18 @@
             <rosparam file="$(find g12_bringup)/config/move_base_params.yaml" command="load" />
             <rosparam file="$(find g12_bringup)/config/dwa_local_planner_params.yaml" command="load" />
 
-
-
-
             <param name="base_global_planner" value="carrot_planner/CarrotPlanner" />
-            <!-- <param name="planner_frequency" value="2"/> -->
+            <param name="recovery_behavior_enabled" value="false"/>
 
+            <!-- ns frames -->
             <param name="global_costmap/global_frame" value="$(arg robot_name)/map"/>
-            <param name="global_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
+            <param name="global_costmap/robot_base_frame" value="$(arg robot_name)/base_footprint"/>
             <param name="global_costmap/scan/sensor_frame" value="$(arg robot_name)/camera_rgb_optical_frame"/>
-            <!-- <param name="global_costmap/scan/topic" value="scan"/> -->
 
             <param name="local_costmap/global_frame" value="$(arg robot_name)/map"/>
-            <param name="local_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
+            <param name="local_costmap/robot_base_frame" value="$(arg robot_name)/base_footprint"/>
             <param name="local_costmap/scan/sensor_frame" value="$(arg robot_name)/camera_rgb_optical_frame"/>
-            <!-- <param name="local_costmap/scan/topic" value="scan"/> -->
 
-
-
-            <!-- Turtlebot speeds -->
-            <!-- <param name="DWAPlannerROS/max_vel_x" value="0.26"/> -->
-            <!-- <param name="DWAPlannerROS/min_vel_x" value="-0.26"/> -->
-            <!-- <param name="DWAPlannerROS/max_vel_trans" value="0.26"/> -->
-            <!-- <param name="DWAPlannerROS/min_vel_trans" value="0.13"/> -->
-            <!-- <param name="DWAPlannerROS/max_vel_theta" value="1.82"/> -->
-            <!-- <param name="DWAPlannerROS/min_vel_theta" value="0.9"/> -->
-            <!-- <param name="DWAPlannerROS/acc_lim_x" value="2.5"/> -->
-            <!-- <param name="DWAPlannerROS/acc_lim_theta" value="3.2"/> -->
-
-            <!-- <param name="TrajectoryPlannerROS/max_vel_x" value="0.26"/> -->
-            <!-- <param name="TrajectoryPlannerROS/min_vel_x" value="-0.26"/> -->
-            <!-- <param name="TrajectoryPlannerROS/max_vel_theta" value="1.0"/> -->
-            <!-- <param name="TrajectoryPlannerROS/min_vel_theta" value="-1.0"/> -->
-            <!-- <param name="TrajectoryPlannerROS/min_in_place_vel_theta" value="1.0"/> -->
-            <!-- <param name="TrajectoryPlannerROS/acc_lim_x" value="2.5"/> -->
-            <!-- <param name="TrajectoryPlannerROS/acc_lim_theta" value="3.2"/> -->
         </node>
 
         <include file="$(find g12_bringup)/launch/spawn.launch">
@@ -171,10 +137,10 @@
             <arg name="y_pos" value="$(arg y_pos)"/>
             <arg name="z_pos" value="$(arg z_pos)"/>
         </include>
-
-        <group if="$(arg driver)">
-            <node pkg="g12_player" type="driver" name="$(arg robot_name)" output="screen"/>
-        </group>
-
     </group>
+
+    <group if="$(arg run_driver)">
+        <node pkg="g12_player" type="driver" name="$(arg robot_name)" respawn="true" output="screen"/>
+    </group>
+    
 </launch>

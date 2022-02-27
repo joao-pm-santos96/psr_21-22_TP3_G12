@@ -237,8 +237,6 @@ class Driver:
 
                 goal.target_pose = tf2_geometry_msgs.do_transform_pose(goal.target_pose, transform)
 
-
-
             # send the goal message
             self.action_c.send_goal(goal)
 
@@ -391,7 +389,7 @@ def main():
 
         elif action == 'hunt' and action != state:
             rospy.loginfo('Hunting!')
-            # state = 'hunt'
+            state = 'hunt'
             driver.cancelGoals()
             driver.hunt()
 

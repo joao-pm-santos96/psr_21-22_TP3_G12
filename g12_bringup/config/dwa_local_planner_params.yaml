@@ -1,4 +1,5 @@
-DWAPlannerROS:
+# DWAPlannerROS:
+TrajectoryPlannerROS:
 
 # Robot Configuration Parameters
   max_vel_x: 0.26
