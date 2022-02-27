@@ -234,11 +234,6 @@ class Driver:
                                                         goal.target_pose.header.frame_id,
                                                         goal.target_pose.header.stamp,
                                                         rospy.Duration(1.0))
-                # correct orientation
-                goal.target_pose.pose.orientation.x = 0.5
-                goal.target_pose.pose.orientation.y = -0.5
-                goal.target_pose.pose.orientation.z = 0.5
-                goal.target_pose.pose.orientation.w = 0.5
 
                 goal.target_pose = tf2_geometry_msgs.do_transform_pose(goal.target_pose, transform)
 
@@ -305,6 +300,12 @@ class Driver:
         goal.target_pose.header.frame_id = self.closest_players['frame_id']
         goal.target_pose.pose.position = self.closest_players[self.prey_team]['point']
 
+        # correct orientation
+        goal.target_pose.pose.orientation.x = 0.5
+        goal.target_pose.pose.orientation.y = -0.5
+        goal.target_pose.pose.orientation.z = 0.5
+        goal.target_pose.pose.orientation.w = 0.5
+
         self.sendGoal(goal)
 
 
@@ -317,8 +318,13 @@ class Driver:
         goal.target_pose.header.frame_id = self.closest_players['frame_id']
         goal.target_pose.pose.position = self.closest_players[self.hunter_team]['point']
 
-        goal.target_pose.pose.position.x *= -1
-        goal.target_pose.pose.position.y *= -1
+        goal.target_pose.pose.position.z *= -1
+
+        # correct orientation
+        goal.target_pose.pose.orientation.x = -0.5
+        goal.target_pose.pose.orientation.y = -0.5
+        goal.target_pose.pose.orientation.z = 0.5
+        goal.target_pose.pose.orientation.w = -0.5
 
         self.sendGoal(goal)
 
