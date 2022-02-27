@@ -35,6 +35,66 @@
         <arg name="run_driver" value="$(arg run_driver)"/>
     </include>
 
+    <!-- Red1 -->
+    <include file="$(find g12_bringup)/launch/robot.launch">
+        <arg name="robot_name" value="red2"/>
+        <arg name="robot_color" value="Red"/>
+        <arg name="x_pos" value="0"/>
+        <arg name="y_pos" value="1"/>
+        <arg name="z_pos" value="0"/>
+        <arg name="run_driver" value="$(arg run_driver)"/>
+    </include>
+
+    <!-- Green1 -->
+    <include file="$(find g12_bringup)/launch/robot.launch">
+        <arg name="robot_name" value="green2"/>
+        <arg name="robot_color" value="Green"/>
+        <arg name="x_pos" value="1"/>
+        <arg name="y_pos" value="1"/>
+        <arg name="z_pos" value="0"/>
+        <arg name="run_driver" value="$(arg run_driver)"/>
+    </include>
+
+    <!-- Blue1 -->
+    <include file="$(find g12_bringup)/launch/robot.launch">
+        <arg name="robot_name" value="blue2"/>
+        <arg name="robot_color" value="Blue"/>
+        <arg name="x_pos" value="-1"/>
+        <arg name="y_pos" value="-1"/>
+        <arg name="z_pos" value="0"/>
+        <arg name="run_driver" value="$(arg run_driver)"/>
+    </include>
+
+    <!-- Red1 -->
+    <include file="$(find g12_bringup)/launch/robot.launch">
+        <arg name="robot_name" value="red3"/>
+        <arg name="robot_color" value="Red"/>
+        <arg name="x_pos" value="2"/>
+        <arg name="y_pos" value="0"/>
+        <arg name="z_pos" value="0"/>
+        <arg name="run_driver" value="$(arg run_driver)"/>
+    </include>
+
+    <!-- Green1 -->
+    <include file="$(find g12_bringup)/launch/robot.launch">
+        <arg name="robot_name" value="green3"/>
+        <arg name="robot_color" value="Green"/>
+        <arg name="x_pos" value="1"/>
+        <arg name="y_pos" value="2"/>
+        <arg name="z_pos" value="0"/>
+        <arg name="run_driver" value="$(arg run_driver)"/>
+    </include>
+
+    <!-- Blue1 -->
+    <include file="$(find g12_bringup)/launch/robot.launch">
+        <arg name="robot_name" value="blue3"/>
+        <arg name="robot_color" value="Blue"/>
+        <arg name="x_pos" value="-1"/>
+        <arg name="y_pos" value="-2"/>
+        <arg name="z_pos" value="0"/>
+        <arg name="run_driver" value="$(arg run_driver)"/>
+    </include>
+
     <group if="$(arg visualize)">
         <!-- Include do visualize.launch-->
         <include file="$(find g12_bringup)/launch/visualize.launch"/>
