@@ -117,7 +117,7 @@
             <rosparam file="$(find g12_bringup)/config/move_base_params.yaml" command="load" />
             <rosparam file="$(find g12_bringup)/config/dwa_local_planner_params.yaml" command="load" />
 
-            <param name="base_global_planner" value="carrot_planner/CarrotPlanner" />
+            <!-- <param name="base_global_planner" value="carrot_planner/CarrotPlanner" /> -->
             <param name="recovery_behavior_enabled" value="false"/>
 
             <!-- ns frames -->
@@ -142,5 +142,5 @@
     <group if="$(arg run_driver)">
         <node pkg="g12_player" type="driver" name="$(arg robot_name)" respawn="true" output="screen"/>
     </group>
-    
+
 </launch>
