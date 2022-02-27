@@ -8,7 +8,9 @@ IMPORTS
 """
 import random
 import rospy
-import tf
+# import tf
+import tf2_ros
+import tf2_geometry_msgs
 import actionlib
 
 import ros_numpy as ros_np
@@ -28,7 +30,7 @@ from actionlib_msgs.msg import GoalStatus
 METADATA
 """
 
-"""gazebo.xa
+"""
 TODO
 """
 
@@ -103,7 +105,9 @@ class Driver:
         rospy.loginfo(f'My name is {self.name}. I am team {self.my_team} I am hunting {players[self.prey_team]} and fleeing from {players[self.hunter_team]}')
 
         # tf
-        self.tf_listener = tf.TransformListener()
+        # self.tf_listener = tf.TransformListener()
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
 
     def _scanCallback(self, msg):
@@ -218,11 +222,33 @@ class Driver:
             goal (MoveBaseGoal): The target pose.
         """
 
-        # wait for server to be ready
-        self.action_c.wait_for_server()
+        try:
+                
+            # wait for server to be ready
+            self.action_c.wait_for_server()
 
-        # send the goal message
-        self.action_c.send_goal(goal)
+            # rectify frame
+            if goal.target_pose.header.frame_id != f'{self.name}/map':
+
+                transform = self.tf_buffer.lookup_transform(f'{self.name}/map',
+                                                        goal.target_pose.header.frame_id,
+                                                        goal.target_pose.header.stamp,
+                                                        rospy.Duration(1.0))
+
+                goal.target_pose = tf2_geometry_msgs.do_transform_pose(goal.target_pose, transform)
+
+                # TODO better orientation
+                goal.target_pose.pose.orientation.x = 0
+                goal.target_pose.pose.orientation.y = 0
+                goal.target_pose.pose.orientation.z = 0
+                goal.target_pose.pose.orientation.w = 1
+
+
+            # send the goal message
+            self.action_c.send_goal(goal)
+
+        except Exception as e:
+            rospy.logerr(e)
 
         # wait for the action result
         # self.action_c.wait_for_result()
@@ -279,22 +305,8 @@ class Driver:
         goal.target_pose.header.frame_id = self.closest_players['frame_id']
         goal.target_pose.pose.position = self.closest_players[self.prey_team]['point']
 
-        # TODO better orientation
-        goal.target_pose.pose.orientation.x = 0
-        goal.target_pose.pose.orientation.y = 0
-        goal.target_pose.pose.orientation.z = 0
-        goal.target_pose.pose.orientation.w = 1
+        self.sendGoal(goal)
 
-        t = self.tf_listener.getLatestCommonTime(self.closest_players['frame_id'], f"{self.name}/map")
-        # self.tf_listener.lookupTransform(self.closest_players['frame_id'], f"{self.name}/map", t)not
-
-        self.tf_listener.waitForTransform(self.closest_players['frame_id'], f'{self.name}/map', t, rospy.Duration(5))
-
-        if self.tf_listener.canTransform(self.closest_players['frame_id'], f'{self.name}/map', t):
-
-            goal.target_pose = self.tf_listener.transformPose(f'{self.name}/map', goal.target_pose)
-
-            self.sendGoal(goal)
 
     def flee(self):
         """Flee mechanism.
@@ -308,12 +320,7 @@ class Driver:
         goal.target_pose.pose.position.x *= -1
         goal.target_pose.pose.position.y *= -1
 
-        # TODO better orientation
-        goal.target_pose.pose.orientation.x = 0
-        goal.target_pose.pose.orientation.y = 0
-        goal.target_pose.pose.orientation.z = 0
-        goal.target_pose.pose.orientation.w = 1
-
+        self.sendGoal(goal)
 
     '''
     TESTING AREA.... may lack comments... :(
