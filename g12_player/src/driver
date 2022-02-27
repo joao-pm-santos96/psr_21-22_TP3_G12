@@ -109,7 +109,6 @@ class Driver:
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
 
-
     def _scanCallback(self, msg):
         """Callback used to update obstacle data using laser scan data.
 
@@ -135,7 +134,6 @@ class Driver:
         Args:
             msg (JointState): joint state.
         """
-
         if msg.name[0] == 'camera_joint':
             self.current_joint = msg.position[0]
 
