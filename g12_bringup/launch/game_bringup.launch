@@ -16,24 +16,24 @@
     </include>
 
     <!-- Green1 -->
-    <!-- <include file="$(find g12_bringup)/launch/robot.launch">
+    <include file="$(find g12_bringup)/launch/robot.launch">
         <arg name="robot_name" value="green1"/>
         <arg name="robot_color" value="Green"/>
         <arg name="x_pos" value="7"/>
         <arg name="y_pos" value="4"/>
         <arg name="z_pos" value="0"/>
         <arg name="driver" value="$(arg run_driver)"/>
-    </include> -->
+    </include>
 
     <!-- Blue1 -->
-    <!-- <include file="$(find g12_bringup)/launch/robot.launch">
+    <include file="$(find g12_bringup)/launch/robot.launch">
         <arg name="robot_name" value="blue1"/>
         <arg name="robot_color" value="Blue"/>
         <arg name="x_pos" value="6"/>
         <arg name="y_pos" value="5"/>
         <arg name="z_pos" value="0"/>
         <arg name="driver" value="$(arg run_driver)"/>
-    </include> -->
+    </include>
 
     <group if="$(arg visualize)">
         <!-- Include do visualize.launch-->

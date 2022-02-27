@@ -11,11 +11,11 @@
     <group ns="$(arg robot_name)">
 
         <param name="tf_prefix" value="$(arg robot_name)"/>
+        <param name="publish_frequency" type="double" value="30.0"/>
 
         <param name="robot_description" command="$(find xacro)/xacro $(find g12_description)/urdf/g12.urdf.xacro player_name:=$(arg robot_name) player_color:=$(arg robot_color)"/>
 
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
-            <param name="publish_frequency" type="double" value="30.0"/>
         </node>
 
 
@@ -122,6 +122,7 @@
 
             <param name="base_global_planner" value="carrot_planner/CarrotPlanner" />
             <param name="planner_frequency" value="2"/>
+            <param name="recovery_behavior_enabled" value="false"/>
             <!-- <param name="global_costmap/transform_tolerance" value="2"/> -->
             <!-- <param name="local_costmap/transform_tolerance" value="2"/> -->
 
@@ -133,6 +134,16 @@
             <param name="local_costmap/robot_base_frame" value="$(arg robot_name)/base_link"/>
             <param name="local_costmap/scan/sensor_frame" value="$(arg robot_name)/camera_rgb_optical_frame"/>
             <param name="local_costmap/scan/topic" value="scan"/>
+
+            <!-- Turtlebot speeds -->
+            <param name="DWAPlannerROS/max_vel_x" value="0.26"/>
+            <param name="DWAPlannerROS/min_vel_x" value="-0.26"/>
+            <param name="DWAPlannerROS/max_vel_trans" value="0.26"/>
+            <param name="DWAPlannerROS/min_vel_trans" value="0.13"/>
+            <param name="DWAPlannerROS/max_vel_theta" value="1.82"/>
+            <param name="DWAPlannerROS/min_vel_theta" value="0.9"/>
+            <param name="DWAPlannerROS/acc_lim_x" value="2.5"/>
+            <param name="DWAPlannerROS/acc_lim_theta" value="3.2"/>
         </node>
 
         <include file="$(find g12_bringup)/launch/spawn.launch">
@@ -143,7 +154,7 @@
         </include>
 
         <group if="$(arg driver)">
-            <node pkg="g12_driver" type="driver" name="$(arg robot_name)" output="screen"/>
+            <node pkg="g12_player" type="driver" name="$(arg robot_name)" output="screen"/>
         </group>
 
     </group>

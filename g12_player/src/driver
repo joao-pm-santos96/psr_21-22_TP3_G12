@@ -17,7 +17,7 @@ import numpy as np
 from tf.transformations import quaternion_from_euler
 
 from std_msgs.msg import Float64
-from sensor_msgs.msg import PointCloud2, LaserScan
+from sensor_msgs.msg import PointCloud2, LaserScan, JointState
 from geometry_msgs.msg import PoseStamped, Point, Quaternion, PointStamped, Twist
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from gazebo_msgs.msg import ContactsState
@@ -71,14 +71,15 @@ class Driver:
 
         self.closest_obstacle = {'dist': 999, 'angle': 999}
         self.closest_players = {
-            'red': {'point': None, 'dist': None},
-            'green': {'point': None, 'dist': None},
-            'blue': {'point': None, 'dist': None},
+            'red': {'point': None, 'dist': None, 'angle': None},
+            'green': {'point': None, 'dist': None, 'angle': None},
+            'blue': {'point': None, 'dist': None, 'angle': None},
             'frame_id': None
         }
         self.hunter_detected = False
         self.prey_detected = False
         self.contact = False
+        self.current_joint = 0.0
 
         # params
         players = {'red': rospy.get_param('/red_players'),
@@ -87,12 +88,13 @@ class Driver:
 
         # subscriptions
         rospy.Subscriber(f'/{self.name}/scan', LaserScan, self._scanCallback)
-        # rospy.Subscriber(f'/{self.name}/contact', ContactsState, self._contactCallback)
         rospy.Subscriber(f'/{self.name}/extract_ground/output', PointCloud2, self._pcCallback)
+        # rospy.Subscriber(f'/{self.name}/joint_states', JointState, self._jointCallback)
+        # rospy.Subscriber(f'/{self.name}/contact', ContactsState, self._contactCallback)
 
         # publications
-        # self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist, queue_size=10)
         self.cmd_joint = rospy.Publisher(f'{self.name}/kinect_position_controller/command', Float64, queue_size=10)
+        # self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist, queue_size=10)
 
         # actions
         self.action_c = actionlib.SimpleActionClient(f'/{self.name}/move_base',MoveBaseAction)
@@ -122,6 +124,16 @@ class Driver:
             msg (ContactsState): contact state.
         """
         self.contact = bool(len(msg.states))
+
+    def _jointCallback(self, msg):
+        """Callback used to store the current value of the kinect joint.
+
+        Args:
+            msg (JointState): joint state.
+        """
+
+        if msg.name[0] == 'camera_joint':
+            self.current_joint = msg.position[0]
 
     def _pcCallback(self, pc):
         """Callback used to update players data when a point cloud (colored) is received.
@@ -183,10 +195,13 @@ class Driver:
 
                 self.closest_players[team]['dist'] = np.min(team_dist)
                 self.closest_players[team]['point'] = point
+                self.closest_players[team]['angle'] = - np.arctan2(point.x, point.z)
             
             else:
                 self.closest_players[team]['dist'] = None
                 self.closest_players[team]['point'] = None
+                self.closest_players[team]['angle'] = None
+
 
     def sendJoint(self, joint):
         """Send joint value to controller.
@@ -235,13 +250,12 @@ class Driver:
 
         goal = MoveBaseGoal()
 
-        delta = 1
-        x = random.uniform(0, delta)
-        y = random.uniform(0, delta)
+        x = random.uniform(-6, 6)
+        y = random.uniform(-2, 5)
         ang = random.uniform(-np.pi/2, np.pi/2)
 
         goal.target_pose.header.stamp = rospy.Time.now()
-        goal.target_pose.header.frame_id = f'{self.name}/base_link'
+        goal.target_pose.header.frame_id = f'{self.name}/map'
 
         goal.target_pose.pose.position.x = x
         goal.target_pose.pose.position.y = y
@@ -259,7 +273,6 @@ class Driver:
     def hunt(self):
         """Hunting mechanism.
         """
-
         goal = MoveBaseGoal()
 
         goal.target_pose.header.stamp = rospy.Time.now()
@@ -272,12 +285,20 @@ class Driver:
         goal.target_pose.pose.orientation.z = 0
         goal.target_pose.pose.orientation.w = 1
 
-        self.sendGoal(goal)
+        t = self.tf_listener.getLatestCommonTime(self.closest_players['frame_id'], f"{self.name}/map")
+        # self.tf_listener.lookupTransform(self.closest_players['frame_id'], f"{self.name}/map", t)not
+
+        self.tf_listener.waitForTransform(self.closest_players['frame_id'], f'{self.name}/map', t, rospy.Duration(5))
+
+        if self.tf_listener.canTransform(self.closest_players['frame_id'], f'{self.name}/map', t):
+
+            goal.target_pose = self.tf_listener.transformPose(f'{self.name}/map', goal.target_pose)
+
+            self.sendGoal(goal)
 
     def flee(self):
         """Flee mechanism.
-        """
-        
+        """        
         goal = MoveBaseGoal()
 
         goal.target_pose.header.stamp = rospy.Time.now()
@@ -293,7 +314,6 @@ class Driver:
         goal.target_pose.pose.orientation.z = 0
         goal.target_pose.pose.orientation.w = 1
 
-        self.sendGoal(goal)
 
     '''
     TESTING AREA.... may lack comments... :(
@@ -348,6 +368,9 @@ def main():
 
         action = driver.computeAction()
 
+        if driver.getState() not in [GoalStatus.PENDING, GoalStatus.ACTIVE]:
+            state = ''
+
         if action == 'wander' and action != state:
             rospy.loginfo('Wandering...')
             state = 'wander'
@@ -355,7 +378,7 @@ def main():
 
         elif action == 'hunt' and action != state:
             rospy.loginfo('Hunting!')
-            state = 'hunt'
+            # state = 'hunt'
             driver.cancelGoals()
             driver.hunt()
 
