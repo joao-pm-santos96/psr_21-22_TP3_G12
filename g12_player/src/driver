@@ -387,7 +387,7 @@ def main():
 
         elif action == 'hunt' and action != state:
             rospy.loginfo('Hunting!')
-            # state = 'hunt'
+            state = 'hunt'
             driver.cancelGoals()
             driver.hunt()
 
