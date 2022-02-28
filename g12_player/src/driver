@@ -51,9 +51,9 @@ class Driver:
             'b': np.array([10,10,255])
         },
         'min': {
-            'r': np.array([150,0,0]),
-            'g': np.array([0,150,0]),
-            'b': np.array([0,0,150])}
+            'r': np.array([100,0,0]),
+            'g': np.array([0,100,0]),
+            'b': np.array([0,0,100])}
         }
 
         if 'red' in self.name:
@@ -203,7 +203,8 @@ class Driver:
                 self.closest_players[team]['dist'] = None
                 self.closest_players[team]['point'] = None
                 self.closest_players[team]['angle'] = None
-
+        #print("Green:"+str(len(green_cloud)))
+        #print("Blue:"+str(len(blue_cloud)))
 
     def sendJoint(self, joint):
         """Send joint value to controller.
