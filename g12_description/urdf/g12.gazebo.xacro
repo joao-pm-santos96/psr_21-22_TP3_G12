@@ -5,7 +5,6 @@
   <xacro:arg name="imu_visual"    default="false"/>
 
   <gazebo reference="base_link">
-    <!-- <material>Gazebo/Yellow</material> -->
     <material>Gazebo/${player_color}</material>
   </gazebo>
 
@@ -178,6 +177,7 @@
     </sensor>
   </gazebo> -->
   <gazebo reference="camera_link">
+    <material>Gazebo/${player_color}</material>
     <sensor name="camera_link_camera" type="depth">
       <update_rate>3.0</update_rate>
       <camera>
