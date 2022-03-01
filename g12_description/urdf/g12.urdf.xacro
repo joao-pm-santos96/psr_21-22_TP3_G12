@@ -198,16 +198,23 @@
   </link>
 
   <joint name="camera_joint" type="continuous">
-    <origin xyz="-0.1 0.0 0.3" rpy="0 0 0"/>
+    <origin xyz="-0.05 0.0 0.35" rpy="0 0 0"/>
     <parent link="base_link"/>
-    <child link="camera_link"/>
+    <child link="camera_link_aux"/>
     <axis xyz="0 0 1"/>    
     <limit effort="30" velocity="0.3" />
+  </joint>
+  <link name="camera_link_aux"/>
+
+  <joint name="camera_joint_aux" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0.4 0"/>
+    <parent link="camera_link_aux"/>
+    <child link="camera_link"/>
   </joint>
 
   <link name="camera_link">
     <collision>
-      <origin xyz="0.005 0.011 0.013" rpy="0 0 0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://g12_description/meshes/kinect_camera_simple.stl" scale="1.0 1.0 1.0"/>
       </geometry>
