@@ -202,6 +202,7 @@
     <parent link="base_link"/>
     <child link="camera_link"/>
     <axis xyz="0 0 1"/>    
+    <limit effort="30" velocity="0.3" />
   </joint>
 
   <link name="camera_link">
