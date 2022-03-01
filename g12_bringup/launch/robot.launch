@@ -38,7 +38,7 @@
             filter_limit_min: 0.01
             filter_limit_max: 5.0
             filter_limit_negative: False
-            leaf_size: 0.025
+            leaf_size: 0.05
             </rosparam>
         </node>
 
@@ -84,7 +84,7 @@
             model_type: 11
             axis: [0.0,0.0,1.0]
             distance_threshold: 0.155
-            max_iterations: 1000
+            max_iterations: 500
             method_type: 0
             optimize_coefficients: true
             normal_distance_weight: 0.1
@@ -107,31 +107,7 @@
             <param name="base_frame" value="/$(arg robot_name)/base_link" />
         </node>
 
-        <!-- move_base -->
-        <!-- <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-
-            <rosparam file="$(find g12_bringup)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
-            <rosparam file="$(find g12_bringup)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-            <rosparam file="$(find g12_bringup)/config/local_costmap_params.yaml" command="load" />
-            <rosparam file="$(find g12_bringup)/config/global_costmap_params.yaml" command="load" />
-            <rosparam file="$(find g12_bringup)/config/move_base_params.yaml" command="load" />
-            <rosparam file="$(find g12_bringup)/config/dwa_local_planner_params.yaml" command="load" />
-
-            <param name="base_global_planner" value="carrot_planner/CarrotPlanner" />
-            <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
-
-            <param name="recovery_behavior_enabled" value="false"/>
-
-            <param name="global_costmap/global_frame" value="$(arg robot_name)/map"/>
-            <param name="global_costmap/robot_base_frame" value="$(arg robot_name)/base_footprint"/>
-            <param name="global_costmap/scan/sensor_frame" value="$(arg robot_name)/camera_rgb_optical_frame"/>
-
-            <param name="local_costmap/global_frame" value="$(arg robot_name)/map"/>
-            <param name="local_costmap/robot_base_frame" value="$(arg robot_name)/base_footprint"/>
-            <param name="local_costmap/scan/sensor_frame" value="$(arg robot_name)/camera_rgb_optical_frame"/>
-
-        </node> -->
-
+        <!-- Move Base -->
         <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
 
             <rosparam file="$(find g12_bringup)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />

@@ -18,7 +18,7 @@ import numpy as np
 
 from tf.transformations import quaternion_from_euler
 
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, String
 from sensor_msgs.msg import PointCloud2, LaserScan, JointState
 from geometry_msgs.msg import PoseStamped, Point, Quaternion, PointStamped, Twist
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -96,6 +96,7 @@ class Driver:
 
         # publications
         self.cmd_joint = rospy.Publisher(f'{self.name}/kinect_position_controller/command', Float64, queue_size=10)
+        self.state_pub = rospy.Publisher(f'{self.name}/state', String, queue_size=10)
         # self.cmd_vel_pub = rospy.Publisher(f'{self.name}/cmd_vel', Twist, queue_size=10)
 
         # actions
@@ -241,12 +242,6 @@ class Driver:
 
         except Exception as e:
             rospy.logerr(e)
-
-        # wait for the action result
-        # self.action_c.wait_for_result()
-
-        # return the result
-        # return self.action_c.get_result()
 
     def getState(self):
         """Get state of the action.
@@ -398,6 +393,7 @@ def main():
             driver.cancelGoals()
             driver.flee()
 
+        driver.state_pub.publish(state)
         rate.sleep()
         
 
