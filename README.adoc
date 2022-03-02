@@ -6,15 +6,19 @@ Refer to the link:TP3.adoc[TP3] for the game rules.
 
 [source, bash]
 ----
-roslaunch g12_bringup gazebo_bringup.launch
+roslaunch g12_bringup gazebo_bringup.launch <arena>:=true
 ----
+
+<arena> can be fnr, th_arena1, th_arena2 or th_arena3.
 
 == Run Game
 
 [source, bash]
 ----
-roslaunch g12_bringup game_bringup.launch group1:=true group2:=true group3:=true run_driver:=true
+roslaunch g12_bringup game_bringup.launch group1:=true group2:=true group3:=true run_driver:=true visualize:=true
 ----
+
+Each group is a group of one robot for each red, green and blue team.
 
 == Run Referee
 
@@ -29,3 +33,5 @@ rosrun th_referee th_referee
 ----
 roslaunch g12_bringup teleop.launch player_name:=red1 keyboard:=true
 ----
+
+If keyboard is false, the GUI will be used.
