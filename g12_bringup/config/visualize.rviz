@@ -24,7 +24,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: Image
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -191,7 +191,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: Map
-      Topic: /red1/move_base/global_costmap/costmap
+      Topic: /red1/move_base/local_costmap/costmap
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -300,16 +300,6 @@ Visualization Manager:
       Topic: /red1/move_base/TebLocalPlannerROS/local_plan
       Unreliable: false
       Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /red1/move_base/TebLocalPlannerROS/teb_markers
-      Name: Marker
-      Namespaces:
-        PointObstacles: true
-        RobotFootprintModel: true
-        TebContainer: true
-      Queue Size: 100
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -376,5 +366,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1186
-  X: 724
+  X: 722
   Y: 0
