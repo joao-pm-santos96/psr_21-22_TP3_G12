@@ -122,6 +122,7 @@ class Driver:
             self.sendJoint(self.closest_obstacle['angle'])
         else:
             self.sendJoint(self.current_joint+0.2)
+            
     def _contactCallback(self, msg):
         """Callback used to update contact detection data.
 
@@ -346,23 +347,23 @@ class Driver:
 
 
         if not (self.prey_detected or self.hunter_detected) and not goal_ongoing:
-            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", True)
+            
             return wander
 
         elif (self.prey_detected and not self.hunter_detected):
-            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", False)
+            
             return hunt
 
         elif (not self.prey_detected and self.hunter_detected):
-            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", True)
+            
             return flee
 
         elif (self.prey_detected and self.hunter_detected) and hunter_is_closest:
-            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", True)
+            
             return flee
 
         elif (self.prey_detected and self.hunter_detected) and not hunter_is_closest:
-            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", False)
+            
             return hunt
 
 """
@@ -372,7 +373,7 @@ def main():
 
     rospy.init_node('g12_driver', anonymous=False)
 
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(5)
     driver = Driver()
     state = ''
 
@@ -381,6 +382,10 @@ def main():
         action = driver.computeAction()
 
         if driver.getState() not in [GoalStatus.PENDING, GoalStatus.ACTIVE]:
+            state = ''
+            
+        if not (driver.prey_detected or driver.hunter_detected) and (state in ['wander', 'flee']):
+            driver.cancelGoals()
             state = ''
 
         if action == 'wander' and action != state:

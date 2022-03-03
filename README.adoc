@@ -2,6 +2,12 @@
 
 Refer to the link:TP3.adoc[TP3] for the game rules.
 
+== Videos 
+
+link:Game[]
+
+link:Teleop[]
+
 == Run Gazebo
 
 [source, bash]
