@@ -1,5 +1,4 @@
 local_costmap:
-  enabled: false
   global_frame: odom
   robot_base_frame: base_link
 
@@ -10,4 +9,6 @@ local_costmap:
   rolling_window: true
   width: 3
   height: 3
-  
+
+  inflation_layer:
+    enabled: false

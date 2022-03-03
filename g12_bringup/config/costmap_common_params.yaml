@@ -8,4 +8,4 @@ observation_sources: scan
 
 scan: {sensor_frame: base_scan, data_type: LaserScan, topic: scan, marking: true, clearing: true}
 
-resolution: 0.25
+resolution: 0.15
