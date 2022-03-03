@@ -118,7 +118,6 @@ class Driver:
         """
         self.closest_obstacle['dist'] = np.min(msg.ranges)
         self.closest_obstacle['angle'] = msg.angle_min + msg.angle_increment * np.argmin(msg.ranges)
-        print(self.hunter_detected,self.prey_detected)
         if self.hunter_detected or self.prey_detected:
             self.sendJoint(self.closest_obstacle['angle'])
         else:
@@ -347,18 +346,23 @@ class Driver:
 
 
         if not (self.prey_detected or self.hunter_detected) and not goal_ongoing:
+            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", True)
             return wander
 
         elif (self.prey_detected and not self.hunter_detected):
+            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", False)
             return hunt
 
         elif (not self.prey_detected and self.hunter_detected):
+            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", True)
             return flee
 
         elif (self.prey_detected and self.hunter_detected) and hunter_is_closest:
+            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", True)
             return flee
 
         elif (self.prey_detected and self.hunter_detected) and not hunter_is_closest:
+            rospy.set_param(f"{self.name}/move_base/TebLocalPlannerROS/include_costmap_obstacles", False)
             return hunt
 
 """
