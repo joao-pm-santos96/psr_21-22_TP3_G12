@@ -3,11 +3,8 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /PointCloud21
-        - /TF1
-        - /TF1/Frames1
-      Splitter Ratio: 0.699999988079071
+      Expanded: ~
+      Splitter Ratio: 0.40442338585853577
     Tree Height: 478
   - Class: rviz/Selection
     Name: Selection
@@ -122,10 +119,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        camera_link_aux:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         camera_rgb_frame:
           Alpha: 1
           Show Axes: false
@@ -196,12 +189,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: raw
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Map
       Topic: /red1/move_base/global_costmap/costmap
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.10000000149011612
@@ -308,131 +301,14 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /red1/move_base/TebLocalPlannerROS/teb_markers
       Name: Marker
       Namespaces:
-        {}
+        PointObstacles: true
+        RobotFootprintModel: true
+        TebContainer: true
       Queue Size: 100
-      Value: false
-    - Class: rviz/TF
-      Enabled: true
-      Frame Timeout: 15
-      Frames:
-        All Enabled: false
-        blue1/base_footprint:
-          Value: false
-        blue1/base_link:
-          Value: false
-        blue1/base_scan:
-          Value: false
-        blue1/camera_link:
-          Value: false
-        blue1/camera_link_aux:
-          Value: false
-        blue1/camera_rgb_frame:
-          Value: false
-        blue1/camera_rgb_optical_frame:
-          Value: false
-        blue1/caster_back_left_link:
-          Value: false
-        blue1/caster_back_right_link:
-          Value: false
-        blue1/imu_link:
-          Value: false
-        blue1/map:
-          Value: false
-        blue1/odom:
-          Value: false
-        blue1/wheel_left_link:
-          Value: false
-        blue1/wheel_right_link:
-          Value: false
-        green1/base_footprint:
-          Value: false
-        green1/base_link:
-          Value: false
-        green1/base_scan:
-          Value: false
-        green1/camera_link:
-          Value: false
-        green1/camera_link_aux:
-          Value: false
-        green1/camera_rgb_frame:
-          Value: false
-        green1/camera_rgb_optical_frame:
-          Value: false
-        green1/caster_back_left_link:
-          Value: false
-        green1/caster_back_right_link:
-          Value: false
-        green1/imu_link:
-          Value: false
-        green1/map:
-          Value: false
-        green1/odom:
-          Value: false
-        green1/wheel_left_link:
-          Value: false
-        green1/wheel_right_link:
-          Value: false
-        red1/base_footprint:
-          Value: false
-        red1/base_link:
-          Value: true
-        red1/base_scan:
-          Value: false
-        red1/camera_link:
-          Value: true
-        red1/camera_link_aux:
-          Value: false
-        red1/camera_rgb_frame:
-          Value: false
-        red1/camera_rgb_optical_frame:
-          Value: false
-        red1/caster_back_left_link:
-          Value: false
-        red1/caster_back_right_link:
-          Value: false
-        red1/imu_link:
-          Value: false
-        red1/map:
-          Value: false
-        red1/odom:
-          Value: false
-        red1/wheel_left_link:
-          Value: false
-        red1/wheel_right_link:
-          Value: false
-      Marker Alpha: 1
-      Marker Scale: 1
-      Name: TF
-      Show Arrows: true
-      Show Axes: true
-      Show Names: true
-      Tree:
-        red1/map:
-          red1/odom:
-            red1/base_footprint:
-              red1/base_link:
-                red1/base_scan:
-                  {}
-                red1/camera_link_aux:
-                  red1/camera_link:
-                    red1/camera_rgb_frame:
-                      red1/camera_rgb_optical_frame:
-                        {}
-                red1/caster_back_left_link:
-                  {}
-                red1/caster_back_right_link:
-                  {}
-                red1/imu_link:
-                  {}
-                red1/wheel_left_link:
-                  {}
-                red1/wheel_right_link:
-                  {}
-      Update Interval: 0
       Value: true
   Enabled: true
   Global Options:
@@ -462,7 +338,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.572131633758545
+      Distance: 7.90662145614624
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -470,17 +346,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.09333647787570953
-        Y: -0.2517106235027313
-        Z: -0.01496924553066492
+        X: 0.6692205667495728
+        Y: 0.18699340522289276
+        Z: 0.2903687655925751
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8197965621948242
+      Pitch: 0.844796895980835
       Target Frame: <Fixed Frame>
-      Yaw: 1.7091166973114014
+      Yaw: 2.914116859436035
     Saved: ~
 Window Geometry:
   Displays:
@@ -500,5 +376,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1186
-  X: 721
+  X: 724
   Y: 0

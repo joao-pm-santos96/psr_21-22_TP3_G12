@@ -118,9 +118,11 @@ class Driver:
         """
         self.closest_obstacle['dist'] = np.min(msg.ranges)
         self.closest_obstacle['angle'] = msg.angle_min + msg.angle_increment * np.argmin(msg.ranges)
-
-        self.sendJoint(self.closest_obstacle['angle'])
-
+        print(self.hunter_detected,self.prey_detected)
+        if self.hunter_detected or self.prey_detected:
+            self.sendJoint(self.closest_obstacle['angle'])
+        else:
+            self.sendJoint(self.current_joint+0.2)
     def _contactCallback(self, msg):
         """Callback used to update contact detection data.
 
@@ -213,6 +215,7 @@ class Driver:
         Args:
             joint (Float64): Joint value.
         """
+        self.current_joint=joint
         self.cmd_joint.publish(joint)
 
     def sendGoal(self, goal):
