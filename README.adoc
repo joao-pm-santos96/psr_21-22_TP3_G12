@@ -4,9 +4,13 @@ Refer to the link:TP3.adoc[TP3] for the game rules.
 
 == Videos 
 
-link:Game[]
+link:https://youtu.be/Lc67WQZ6v4M[Team Hunt Arena 1]
 
-link:Teleop[]
+link:https://youtu.be/tBYVnsKcxgs[Team Hunt Arena 2]
+
+link:https://youtu.be/cfvaMdwxxHg[Team Hunt Arena 3]
+
+link:https://youtu.be/unPugdF644I[Teleop]
 
 == Run Gazebo
 
